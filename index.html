@@ -1,0 +1,1965 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0f">
+<meta name="description" content="Pisahkan instrumen, lalu ulik bass, gitar, keyboard, atau vokalnya.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ngulik Studio">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);background:#0b0b0f}body{margin:0;overscroll-behavior-y:none}</style>
+</head>
+<body>
+<title>Ngulik Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap">
+<style>
+/* Layout: satu kolom panggung. Pilih instrumen -> sumber lagu -> pemisah & mixer -> nada sekarang -> jejak nada -> tampilan instrumen -> chord -> TAB / not angka.
+   Satu tampilan gelap ala studio; warna aksen ikut instrumen yang dipilih. */
+:root{
+  color-scheme: dark;
+  --ink:#0b0b0f;
+  --stage:#07070a;
+  --panel:#14141b;
+  --line:#262632;
+  --muted:#9d9cb1;
+  --fg:#f2f1f8;
+  --acc:#ffc15e;
+  --acc-ink:#2a1700;
+  --acc-rgb:255,193,94;
+  --c-drums:#b6f36b;--c-bass:#5ff3de;--c-other:#ffc15e;--c-vocals:#ff8fab;
+  --warn:#ff8a70;
+  --f-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --f-body:'Instrument Sans',system-ui,-apple-system,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+body[data-inst="bass"]{--acc:#5ff3de;--acc-ink:#032621;--acc-rgb:95,243,222}
+body[data-inst="gitar"]{--acc:#ffc15e;--acc-ink:#2a1700;--acc-rgb:255,193,94}
+body[data-inst="keys"]{--acc:#b9a3ff;--acc-ink:#1b1240;--acc-rgb:185,163,255}
+body[data-inst="vokal"]{--acc:#ff8fab;--acc-ink:#3a0c1a;--acc-rgb:255,143,171}
+html,body{background:var(--ink);color:var(--fg)}
+body{font-family:var(--f-body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+.vh{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;opacity:0}
+button,select,input,label{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:980px;margin:0 auto;padding-inline:16px;padding-block:18px 44px;display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+.wrap>*{min-width:0}
+
+.top{display:flex;align-items:center;gap:12px;min-width:0}
+.top svg{flex:none}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(22px,4.2vw,30px);letter-spacing:-.025em;margin:0;line-height:1.05}
+.by{font:600 .42em var(--f-mono);letter-spacing:.08em;color:var(--acc);vertical-align:.35em;margin-left:.25em;white-space:nowrap}
+.sub{color:var(--muted);font-size:13px;margin:2px 0 0}
+.mark path,.mark circle{transition:stroke .3s,fill .3s}
+
+.insts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:5px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
+.inst{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px 8px;border:0;border-radius:13px;background:transparent;color:var(--muted);font:600 13px var(--f-body);cursor:pointer;transition:background .2s,color .2s}
+.inst svg{width:24px;height:24px}
+.inst[aria-selected="true"]{background:rgba(var(--acc-rgb),.14);color:var(--acc)}
+.inst:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+
+.sources{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.field{display:flex;flex-direction:column;gap:4px;margin-left:auto}
+.field label,.eyebrow{font:600 10.5px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+select{appearance:none;-webkit-appearance:none;background:var(--panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239d9cb1'/%3E%3C/svg%3E") no-repeat right 12px center;color:var(--fg);border:1px solid var(--line);border-radius:10px;height:38px;padding:0 32px 0 12px;font:500 14px var(--f-body);max-width:100%}
+select:focus-visible,.btn:focus-visible,.chip:focus-visible,.cc:focus-visible,.opt:focus-visible,input[type=range]:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--fg);font:600 14px var(--f-body);cursor:pointer;transition:background .15s,border-color .15s,transform .1s;user-select:none;-webkit-user-select:none;white-space:nowrap}
+.btn:hover{border-color:#3a3a4a}
+.btn:active{transform:scale(.97)}
+.btn svg{width:18px;height:18px;flex:none}
+.btn.primary{background:var(--acc);color:var(--acc-ink);border-color:transparent}
+.btn.primary.on{background:transparent;color:var(--acc);border-color:var(--acc);animation:breathe 1.6s ease-in-out infinite}
+.btn.sm{height:34px;padding:0 13px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+@keyframes breathe{50%{box-shadow:0 0 0 6px rgba(var(--acc-rgb),.13)}}
+.gate{display:flex;align-items:center;gap:10px;flex:1 1 100%}
+.gate input{flex:1}
+.lvl{width:56px;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.lvl i{display:block;height:100%;width:0;background:var(--acc);transition:width .06s}
+.msg{font-size:13px;color:var(--warn);margin:0}
+.msg:empty{display:none}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:14px}
+.panel-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:2px 4px 10px}
+.panel-h h2{font:700 12px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0;flex:none}
+.panel-h span{font:500 12px var(--f-mono);color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* pemisah & mixer */
+.ask{display:grid;gap:12px}
+.ask h3{font:700 clamp(18px,3vw,21px)/1.2 var(--f-display);margin:0 4px;letter-spacing:-.01em}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
+.opt{display:grid;gap:3px;text-align:left;padding:13px 14px;border-radius:14px;border:1px solid var(--line);background:var(--stage);color:var(--fg);cursor:pointer;font:inherit}
+.opt b{font:700 15px var(--f-body)}
+.opt small{color:var(--muted);font-size:12.5px;line-height:1.4}
+.opt[aria-pressed="true"]{border-color:var(--acc);background:rgba(var(--acc-rgb),.08)}
+.opt .tag{justify-self:start;font:600 10px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--acc-ink);background:var(--acc);border-radius:5px;padding:2px 6px;margin-bottom:2px}
+.prog{display:grid;gap:8px;padding:6px 4px}
+.prog .bar{width:100%;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.prog .bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .2s}
+.prog span{font:500 12.5px var(--f-mono);color:var(--muted)}
+.mixer{display:grid;gap:6px}
+.mrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto minmax(70px,140px);align-items:center;gap:8px;padding:6px 8px;border-radius:12px;background:var(--stage)}
+.mrow .dot{width:10px;height:10px;border-radius:50%}
+.mrow b{font:600 14px var(--f-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mrow b small{color:var(--muted);font-weight:500;font-size:12px;margin-left:4px}
+.tg{width:34px;height:30px;border-radius:9px;border:1px solid var(--line);background:transparent;color:var(--muted);font:700 12px var(--f-mono);cursor:pointer}
+.tg[aria-pressed="true"].s{background:var(--acc);color:var(--acc-ink);border-color:transparent}
+.tg[aria-pressed="true"].m{background:#3a2430;color:var(--warn);border-color:transparent}
+.mrow.off b{opacity:.45}
+.mrow input{width:100%;min-width:0}
+.mixbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px}
+.badge{font:600 11px var(--f-mono);letter-spacing:.06em;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 9px}
+
+/* nada sekarang */
+.now{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px 26px;align-items:center;padding:18px 20px;border-radius:20px;border:1px solid var(--line);background:radial-gradient(120% 160% at 0% 0%,rgba(var(--acc-rgb),.12),transparent 55%),var(--panel)}
+.chordbox{display:flex;align-items:center;gap:14px;min-width:0}
+.cname{display:grid;gap:8px}
+.cname b{font-family:var(--f-display);font-weight:800;font-size:clamp(60px,14vw,104px);line-height:.82;letter-spacing:-.05em;color:var(--fg);text-shadow:0 0 30px rgba(var(--acc-rgb),.35);min-width:1.4ch}
+.cname small{font:500 12.5px var(--f-mono);color:var(--muted)}
+.chordbox.idle .cname b{color:#55546a;text-shadow:none}
+.diag{width:112px;height:136px;flex:none}
+.diag svg{display:block;width:100%;height:100%}
+.chordbox.idle .diag{opacity:.35}
+.info{display:grid;gap:9px;min-width:0}
+.state{display:inline-flex;align-items:center;gap:6px;font:600 11px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--acc)}
+.state::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 10px currentColor}
+.info.idle .state{color:var(--muted)}
+.info.idle .state::before{box-shadow:none}
+.nline{display:flex;align-items:baseline;gap:10px;margin:0;min-width:0;flex-wrap:wrap}
+.nline b{font-family:var(--f-display);font-weight:800;font-size:clamp(34px,6vw,46px);line-height:1;letter-spacing:-.03em}
+.info.idle .nline b{color:#55546a}
+.nline .na{font-family:var(--f-display);font-weight:800;font-size:clamp(34px,6vw,46px);line-height:1;color:var(--acc)}
+.pos{font-family:var(--f-display);font-weight:700;font-size:clamp(17px,3vw,22px);letter-spacing:-.01em;line-height:1.15;margin:0;text-wrap:balance}
+.pos em{font-style:normal;color:var(--acc)}
+.pos small{font:500 12px var(--f-mono);color:var(--muted)}
+.alts,.hz{color:var(--muted);font-size:13px;margin:0}
+.hz{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.meter{position:relative;height:34px;max-width:360px;margin-top:6px}
+.meter .track{position:absolute;left:0;right:0;top:12px;height:4px;border-radius:2px;background:linear-gradient(90deg,rgba(255,138,112,.5),rgba(var(--acc-rgb),.55) 40%,rgba(var(--acc-rgb),.55) 60%,rgba(255,138,112,.5))}
+.meter .mid{position:absolute;left:50%;top:6px;width:2px;height:16px;margin-left:-1px;background:var(--fg);opacity:.5;border-radius:1px}
+.meter .needle{position:absolute;top:4px;left:50%;width:4px;height:20px;margin-left:-2px;border-radius:2px;background:var(--acc);box-shadow:0 0 12px var(--acc);transition:left .08s linear}
+.meter .needle.off{background:var(--warn);box-shadow:0 0 12px var(--warn)}
+.meter .scale{position:absolute;left:0;right:0;top:24px;display:flex;justify-content:space-between;font:500 10px var(--f-mono);color:var(--muted)}
+.meter .val{position:absolute;right:0;top:-14px;font:600 11px var(--f-mono);color:var(--fg);font-variant-numeric:tabular-nums}
+.dg-line{stroke:#5f5e72;stroke-width:1.4}
+.dg-nut{stroke:#eceaf4;stroke-width:4;stroke-linecap:round}
+.dg-dot{fill:var(--acc)}
+.dg-txt{fill:var(--muted);font:600 11px var(--f-mono)}
+.dg-mark{fill:none;stroke:var(--muted);stroke-width:1.6}
+.ctones{display:flex;gap:6px;flex-wrap:wrap}
+.ctones span{font:700 15px var(--f-mono);padding:5px 9px;border-radius:9px;background:rgba(var(--acc-rgb),.13);color:var(--acc)}
+
+/* jejak nada */
+.roll-wrap{position:relative;border-radius:14px;overflow:hidden;background:var(--stage);touch-action:pan-y}
+#roll{display:block;width:100%;height:280px;cursor:grab}
+#roll:active{cursor:grabbing}
+.overlay{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:10px;background:rgba(7,7,10,.8);color:var(--fg);font:600 13px var(--f-mono);text-align:center;padding:16px}
+.overlay .bar{width:180px;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
+.overlay .bar i{display:block;height:100%;width:0;background:var(--acc)}
+.transport{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+.play{width:46px;height:46px;border-radius:50%;padding:0;justify-content:center;background:var(--acc);color:var(--acc-ink);border:0}
+.play svg{width:20px;height:20px}
+.play:disabled{background:var(--line);color:var(--muted);cursor:not-allowed}
+.scrub{flex:1;min-width:150px;display:flex;align-items:center;gap:10px}
+.scrub input{flex:1;min-width:0}
+input[type=range]{accent-color:var(--acc);height:28px}
+.time{font:500 12px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.seg{display:flex;gap:4px;padding:3px;border:1px solid var(--line);border-radius:999px}
+.chip{border:0;background:transparent;color:var(--muted);font:600 12px var(--f-mono);height:32px;padding:0 11px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--line);color:var(--fg)}
+.chip.loop[aria-pressed="true"]{background:var(--acc);color:var(--acc-ink)}
+.chip:disabled{opacity:.4;cursor:not-allowed}
+
+/* tampilan instrumen */
+.fb-scroll{overflow-x:auto;border-radius:14px}
+#fret,#piano{display:block}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin:10px 4px 0;color:var(--muted);font-size:12.5px}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.ldot{width:12px;height:12px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px var(--acc)}
+.lring{width:12px;height:12px;border-radius:50%;border:2px solid rgba(var(--acc-rgb),.6)}
+.lsq{width:12px;height:12px;border-radius:3px;border:2px solid rgba(242,241,248,.6)}
+
+/* chord */
+.progr{display:flex;flex-wrap:wrap;gap:8px}
+.cc{display:grid;gap:1px;min-width:58px;padding:8px 12px 7px;border-radius:12px;border:1px solid var(--line);background:var(--stage);color:var(--fg);cursor:pointer;text-align:left;font:inherit}
+.cc b{font:800 19px/1.05 var(--f-display);letter-spacing:-.02em}
+.cc small{font:500 10.5px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.cc.on{border-color:var(--acc);background:rgba(var(--acc-rgb),.12);box-shadow:0 0 0 3px rgba(var(--acc-rgb),.12)}
+.cc.on b{color:var(--acc)}
+.empty{color:var(--muted);font-size:13.5px;margin:2px 4px}
+.stepper{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--line);border-radius:999px;padding:3px}
+.stepper button{width:32px;height:30px;border-radius:999px;border:0;background:transparent;color:var(--fg);font:700 16px var(--f-mono);cursor:pointer}
+.stepper button:hover{background:var(--line)}
+.stepper span{font:600 12px var(--f-mono);color:var(--muted);min-width:78px;text-align:center}
+
+/* TAB & not angka */
+.tab-box{position:relative;overflow-x:auto;background:var(--stage);border-radius:14px;padding:14px 14px 16px}
+#tab{margin:0;font:13px/1.6 var(--f-mono);color:#b5b4c8;white-space:pre}
+#tab span.on{color:var(--acc-ink);background:var(--acc);border-radius:3px;box-shadow:0 0 10px rgba(var(--acc-rgb),.5)}
+.tabnote{margin:8px 4px 0;color:var(--muted);font-size:12.5px}
+.notang{display:flex;flex-wrap:wrap;gap:4px 2px;padding:6px 2px 4px;font:600 21px/1 var(--f-mono)}
+.notang .n{position:relative;display:inline-flex;justify-content:center;min-width:1.25em;padding:12px 3px;border-radius:7px;color:var(--fg)}
+.notang .n.hi::before,.notang .n.lo::after,.notang .n.hi2::before{content:"";position:absolute;left:50%;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:currentColor}
+.notang .n.hi::before{top:3px}
+.notang .n.hi2::before{top:3px;box-shadow:0 -6px 0 currentColor}
+.notang .n.lo::after{bottom:3px}
+.notang .n.on{background:var(--acc);color:var(--acc-ink)}
+.notang .sep{color:#4a4a5c;padding:12px 4px}
+.notang .ch{font:700 11px var(--f-mono);color:var(--acc);align-self:flex-start;padding:0 4px 0 8px}
+
+.export{display:flex;flex-wrap:wrap;gap:8px}
+.tips{display:grid;gap:8px;margin:0;padding:0 4px;list-style:none;color:var(--muted);font-size:13.5px;max-width:72ch}
+.tips li{display:flex;gap:10px}
+.tips li::before{content:"";flex:none;width:6px;height:6px;margin-top:8px;border-radius:50%;background:var(--acc);opacity:.7}
+.tips b{color:var(--fg);font-weight:600}
+.ver{margin:4px 4px 0;font:500 11px var(--f-mono);color:#5d5c70;letter-spacing:.06em}
+
+@media (max-width:620px){
+  .now{grid-template-columns:minmax(0,1fr);padding:16px}
+  #roll{height:250px}
+  .diag{width:100px;height:122px}
+  .field{margin-left:0;flex:1 1 100%}
+  .mrow{grid-template-columns:auto minmax(0,1fr) auto auto;row-gap:2px}
+  .mrow input{grid-column:2/-1}
+}
+@media (prefers-reduced-motion:reduce){
+  .btn.primary.on{animation:none}
+  .meter .needle,.lvl i,.prog .bar i{transition:none}
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <svg class="mark" width="42" height="42" viewBox="0 0 40 40" aria-hidden="true">
+      <rect width="40" height="40" rx="11" fill="#14141b" stroke="#262632"/>
+      <path d="M6 24h6v-8h6v12h5v-6h5v-10h6" fill="none" stroke="var(--acc)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+      <circle cx="12" cy="16" r="2.6" fill="var(--acc)"/><circle cx="23" cy="22" r="2.6" fill="var(--acc)"/><circle cx="28" cy="12" r="2.6" fill="var(--acc)"/>
+    </svg>
+    <div>
+      <h1>Ngulik Studio <span class="by">by Alvon</span></h1>
+      <p class="sub">Pisahkan instrumen, lalu ulik bass, gitar, keyboard, atau vokalnya.</p>
+    </div>
+  </header>
+
+  <nav class="insts" role="tablist" aria-label="Pilih instrumen yang mau diulik">
+    <button class="inst" role="tab" data-inst="bass" aria-selected="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 3.5l6 6M17.5 6.5l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M9.5 14.5c-1.6-1.6-4.6-1.2-5.6.8-1 2 .2 3.4 1.2 4.4s2.4 2.2 4.4 1.2c2-1 2.4-4 .8-5.6" fill="currentColor"/><circle cx="7.4" cy="17.6" r="1" fill="var(--panel)"/></svg>
+      Bass</button>
+    <button class="inst" role="tab" data-inst="gitar" aria-selected="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3l6 6M18 6l-6.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M11.8 12.2c-.8-1.3-2.6-1.6-3.6-.6-.5.5-.6 1.2-1.4 1.4-1.5.3-3.4.6-3.8 2.6-.5 2.6 2.7 5.8 5.3 5.3 2-.4 2.3-2.3 2.6-3.8.2-.8.9-.9 1.4-1.4 1-1 .7-2.8-.5-3.5z" fill="currentColor"/><circle cx="8.2" cy="15.8" r="1.3" fill="var(--panel)"/></svg>
+      Gitar</button>
+    <button class="inst" role="tab" data-inst="keys" aria-selected="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7.5 5v14M12 5v14M16.5 5v14" stroke="currentColor" stroke-width="1.6"/><path d="M6 5h3v7H6zM10.5 5h3v7h-3zM15 5h3v7h-3z" fill="currentColor"/></svg>
+      Keyboard</button>
+    <button class="inst" role="tab" data-inst="vokal" aria-selected="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4M8.5 21h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Vokal</button>
+  </nav>
+
+  <div class="sources">
+    <label class="btn primary" id="fileBtn" for="file" role="button" tabindex="0">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Upload lagu / rekaman
+    </label>
+    <button class="btn" id="micBtn" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4M8.5 21h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <span id="micLabel">Dengar dari mic</span>
+    </button>
+    <button class="btn" id="demoBtn" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V6l10-2v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="2.5" fill="currentColor"/><circle cx="16.5" cy="16" r="2.5" fill="currentColor"/></svg>
+      Lagu demo
+    </button>
+    <input type="file" id="file" class="vh" aria-label="Pilih file lagu atau rekaman">
+    <div class="field" id="tunField">
+      <label for="tuning">Stem senar</label>
+      <select id="tuning"></select>
+    </div>
+    <div class="gate" id="gateRow" hidden>
+      <label class="eyebrow" for="gate">Sensitivitas</label>
+      <input type="range" id="gate" min="1" max="100" value="70">
+      <div class="lvl" aria-hidden="true"><i id="lvl"></i></div>
+    </div>
+  </div>
+  <p class="msg" id="msg" role="status"></p>
+
+  <section class="panel" id="sepPanel" hidden>
+    <div class="panel-h"><h2>Pemisah instrumen</h2><span id="sepName">—</span></div>
+    <div id="sepAsk" class="ask" hidden>
+      <h3>Ini rekaman apa?</h3>
+      <div class="opts" role="group" aria-label="Jenis rekaman">
+        <button class="opt" type="button" data-kind="single" aria-pressed="false"><b>Satu instrumen</b><small>Rekaman kamu main sendiri, atau track yang sudah terpisah. Langsung diulik.</small></button>
+        <button class="opt" type="button" data-kind="band" aria-pressed="false"><b>Lagu full band</b><small>Dipisah dulu jadi drum, bass, gitar/keys, dan vokal supaya nadanya tidak tercampur.</small></button>
+      </div>
+      <div id="methodBox" hidden>
+        <p class="eyebrow" style="margin:6px 4px 8px">Cara memisahkan</p>
+        <div class="opts" role="group" aria-label="Cara memisahkan">
+          <button class="opt" type="button" data-method="dsp" aria-pressed="false"><b>Cepat</b><small>Jalan di semua HP, sekitar 1 menit untuk lagu 4 menit. Hasil cukup untuk bass dan suasana lagu.</small></button>
+          <button class="opt" type="button" data-method="ai" aria-pressed="false"><span class="tag">Paling bersih</span><b>AI Demucs</b><small>Unduh model ±170 MB sekali saja. Paling cocok di laptop/PC dengan Chrome atau Edge terbaru.</small></button>
+        </div>
+      </div>
+      <div class="transport" style="margin-top:2px"><button class="btn primary" id="sepGo" type="button" disabled>Mulai ulik</button></div>
+    </div>
+    <div id="sepBusy" class="prog" hidden><div class="bar"><i id="sepBar"></i></div><span id="sepText">Menyiapkan…</span></div>
+    <div id="sepMix" hidden>
+      <div class="mixer" id="mixer"></div>
+      <div class="mixbar">
+        <span class="badge" id="sepBadge">—</span>
+        <button class="btn sm" id="mixAll" type="button">Semua bunyi</button>
+        <button class="btn sm" id="mixMinus" type="button">Minus one</button>
+        <button class="btn sm" id="mixOnly" type="button">Hanya ini</button>
+        <button class="btn sm" id="sepAgain" type="button">Pisah ulang pakai AI</button>
+      </div>
+    </div>
+    <div id="sepSingle" hidden>
+      <p class="empty" style="margin-bottom:10px">Rekaman satu instrumen, langsung diulik tanpa dipisah.</p>
+      <button class="btn sm" id="toBand" type="button">Ini lagu full band? Pisahkan</button>
+    </div>
+  </section>
+
+  <section class="now" aria-live="polite">
+    <div class="chordbox idle" id="chordbox">
+      <div class="cname"><span class="eyebrow">Chord</span><b id="cName">–</b><small id="cSub"></small></div>
+      <div class="diag" id="cDiag" aria-label="Diagram jari chord"></div>
+      <div class="ctones" id="cTones" hidden></div>
+    </div>
+    <div class="info idle" id="info">
+      <span class="state" id="state">Siap</span>
+      <p class="nline"><b id="nName">–</b><span class="hz" id="hz">— Hz</span></p>
+      <p class="pos" id="pos">Pilih instrumen, lalu upload lagu atau putar demo</p>
+      <div class="meter" aria-hidden="true">
+        <div class="track"></div><div class="mid"></div><div class="needle" id="needle"></div>
+        <div class="val" id="cents">0 cent</div>
+        <div class="scale"><span>−50</span><span>pas</span><span>+50</span></div>
+      </div>
+      <p class="alts" id="alts"></p>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-h"><h2>Jejak nada &amp; chord</h2><span id="srcName">—</span></div>
+    <div class="roll-wrap">
+      <canvas id="roll" aria-label="Lajur chord di atas, garis nada naik turun di bawah"></canvas>
+      <div class="overlay" id="overlay" hidden><span id="ovText">Menyiapkan…</span><div class="bar"><i id="ovBar"></i></div></div>
+    </div>
+    <div class="transport">
+      <button class="btn play" id="playBtn" type="button" aria-label="Putar" disabled>
+        <svg id="icPlay" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+        <svg id="icPause" viewBox="0 0 24 24" aria-hidden="true" hidden><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/></svg>
+      </button>
+      <div class="scrub">
+        <input type="range" id="scrub" min="0" max="1" step="0.01" value="0" aria-label="Posisi waktu">
+        <span class="time" id="time">0:00 / 0:00</span>
+      </div>
+      <div class="seg" role="group" aria-label="Kecepatan putar" id="speeds">
+        <button class="chip" type="button" data-r="0.5" aria-pressed="false">0.5×</button>
+        <button class="chip" type="button" data-r="0.75" aria-pressed="false">0.75×</button>
+        <button class="chip" type="button" data-r="1" aria-pressed="true">1×</button>
+      </div>
+      <div class="seg" role="group" aria-label="Ulang bagian">
+        <button class="chip" type="button" id="setA">A</button>
+        <button class="chip" type="button" id="setB">B</button>
+        <button class="chip loop" type="button" id="loopBtn" aria-pressed="false">Ulang A–B</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-h"><h2 id="viewTitle">Fretboard</h2><span id="viewInfo">Atas = senar paling tinggi</span></div>
+    <div class="fb-scroll" id="fbScroll"><canvas id="fret" aria-label="Fretboard dengan posisi nada"></canvas><canvas id="piano" aria-label="Keyboard piano dengan nada yang menyala" hidden></canvas></div>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-h"><h2>Urutan chord</h2><span id="chordCount">0 chord</span></div>
+    <div class="progr" id="prog"></div>
+    <div class="transport">
+      <div class="stepper" aria-label="Transpose"><button type="button" id="trDown" aria-label="Turunkan setengah nada">−</button><span id="trVal">Transpose 0</span><button type="button" id="trUp" aria-label="Naikkan setengah nada">+</button></div>
+      <div class="stepper" id="capoBox" aria-label="Capo"><button type="button" id="capoDown" aria-label="Kurangi capo">−</button><span id="capoVal">Tanpa capo</span><button type="button" id="capoUp" aria-label="Tambah capo">+</button></div>
+      <button class="btn sm" id="copyChord" type="button">Salin chord</button>
+    </div>
+  </section>
+
+  <section class="panel" id="tabPanel">
+    <div class="panel-h"><h2 id="tabTitle">TAB</h2><span id="tabCount">0 nada</span></div>
+    <div class="tab-box" id="tabBox"><pre id="tab"></pre><div class="notang" id="notang" hidden></div></div>
+    <p class="tabnote" id="tabNote"></p>
+    <div class="transport">
+      <button class="btn sm" id="copyBtn" type="button">Salin</button>
+      <button class="btn sm" id="midiBtn" type="button">Unduh MIDI</button>
+      <button class="btn sm" id="clearBtn" type="button">Bersihkan</button>
+    </div>
+  </section>
+
+  <ul class="tips">
+    <li><span><b>Lagu full band:</b> pilih "Lagu full band" supaya instrumen dipisah dulu. Mode AI jauh lebih bersih, terutama untuk vokal dan bass.</span></li>
+    <li><span><b>Minus one:</b> matikan instrumen yang sedang kamu ulik di mixer, lalu mainkan bagianmu bareng lagunya.</span></li>
+    <li><span><b>Bagian susah:</b> tandai A dan B, nyalakan "Ulang A–B", lalu putar 0.5×.</span></li>
+    <li><span><b>Capo &amp; transpose:</b> geser kunci lagu supaya pas dengan suaramu, atau pakai capo supaya bentuk chord lebih gampang.</span></li>
+  </ul>
+  <p class="ver" id="ver">Ngulik Studio by Alvon · versi 2.0</p>
+</div>
+
+<script>
+(function(){
+'use strict';
+const NOTE=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const nn=m=>NOTE[((m%12)+12)%12];
+const oct=m=>Math.floor(m/12)-1;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const fmt=t=>{t=Math.max(0,t||0);const m=Math.floor(t/60),s=Math.floor(t%60);return m+':'+String(s).padStart(2,'0');};
+const TUNINGS={
+  bass:{
+    std4:{label:'4 senar · E A D G',strings:[28,33,38,43],names:['E','A','D','G'],shift:0},
+    five:{label:'5 senar · B E A D G',strings:[23,28,33,38,43],names:['B','E','A','D','G'],shift:0},
+    dropD:{label:'Drop D · D A D G',strings:[26,33,38,43],names:['D','A','D','G'],shift:0},
+    half:{label:'Turun ½ · Eb Ab Db Gb',strings:[27,32,37,42],names:['Eb','Ab','Db','Gb'],shift:1}},
+  gitar:{
+    std:{label:'Standar · E A D G B E',strings:[40,45,50,55,59,64],names:['E','A','D','G','B','e'],shift:0},
+    dropD:{label:'Drop D · D A D G B E',strings:[38,45,50,55,59,64],names:['D','A','D','G','B','e'],shift:0,drop:true},
+    half:{label:'Turun ½ · Eb Ab Db Gb Bb Eb',strings:[39,44,49,54,58,63],names:['Eb','Ab','Db','Gb','Bb','eb'],shift:1},
+    whole:{label:'Turun 1 · D G C F A D',strings:[38,43,48,53,57,62],names:['D','G','C','F','A','d'],shift:2}}
+};
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+let INST='gitar';
+const tunSel={bass:TUNINGS.bass[store.get('ns.tun.bass')]?store.get('ns.tun.bass'):'std4',gitar:TUNINGS.gitar[store.get('ns.tun.gitar')]?store.get('ns.tun.gitar'):'std'};
+const fretInst=()=>INST==='bass'?'bass':'gitar';
+const tun=()=>TUNINGS[fretInst()][tunSel[fretInst()]];
+const maxF=()=>INST==='bass'?20:22;
+const FMIN=60,FMAX=1400;
+
+/* ---------- deteksi nada melodi (YIN) ---------- */
+function makeDetector(sr,N,fmin=FMIN,fmax=FMAX,fb=0.2){
+  const tauMax=Math.min(Math.floor(N/2),Math.ceil(sr/fmin));
+  const tauMin=Math.max(2,Math.floor(sr/fmax));
+  const W=N-tauMax;const d=new Float32Array(tauMax+2);
+  return function(x){
+    let e=0;for(let i=0;i<N;i++)e+=x[i]*x[i];
+    const rms=Math.sqrt(e/N);
+    if(rms<1e-4)return{f:0,clar:0,rms};
+    d[0]=1;let run=0;
+    for(let tau=1;tau<=tauMax;tau++){
+      let s=0;for(let i=0;i<W;i++){const v=x[i]-x[i+tau];s+=v*v;}
+      run+=s;d[tau]=run>0?s*tau/run:1;
+    }
+    let tau=-1;
+    for(let t=tauMin;t<=tauMax;t++){if(d[t]<0.15){while(t+1<=tauMax&&d[t+1]<d[t])t++;tau=t;break;}}
+    if(tau<0){let best=1,bt=-1;for(let t=tauMin;t<=tauMax;t++)if(d[t]<best){best=d[t];bt=t;}
+      if(best<fb)tau=bt;else return{f:0,clar:1-best,rms};}
+    let bt=tau;
+    if(tau>1&&tau<tauMax){const a=d[tau-1],b=d[tau],c=d[tau+1];const den=a+c-2*b;if(den>0)bt=tau+(a-c)/(2*den);}
+    const f=sr/bt;
+    return{f:(f>=fmin&&f<=fmax)?f:0,clar:1-d[tau],rms};
+  };
+}
+function downsample(src,factor,len,out){
+  const n=Math.floor(len/factor);out=out||new Float32Array(n);
+  for(let i=0;i<n;i++){let s=0;const o=i*factor;for(let k=0;k<factor;k++)s+=src[o+k];out[i]=s/factor;}
+  return out;
+}
+const toMidi=f=>f?69+12*Math.log2(f/440):null;
+const lpCache={};
+function downsampleLP(src,factor,len,out){
+  if(factor===1)return downsample(src,1,len,out);
+  let h=lpCache[factor];
+  if(!h){const T=63,M=(T-1)/2,fc=0.45/factor;h=new Float32Array(T);let sum=0;
+    for(let i=0;i<T;i++){const k=i-M,sinc=k===0?2*fc:Math.sin(2*Math.PI*fc*k)/(Math.PI*k);h[i]=sinc*(0.54-0.46*Math.cos(2*Math.PI*i/(T-1)));sum+=h[i];}
+    for(let i=0;i<T;i++)h[i]/=sum;lpCache[factor]=h;}
+  const T=h.length,M=(T-1)>>1,n=Math.floor(len/factor);out=out||new Float32Array(n);
+  for(let i=0;i<n;i++){const c=i*factor;let s=0;
+    const k0=Math.max(0,M-c),k1=Math.min(T,len-c+M);
+    for(let k=k0;k<k1;k++)s+=src[c-M+k]*h[k];out[i]=s;}
+  return out;
+}
+
+/* ---------- deteksi chord (chroma) ---------- */
+const fftCache={};
+function getFFT(n){
+  if(fftCache[n])return fftCache[n];
+  const rev=new Uint32Array(n),bits=Math.log2(n);
+  for(let i=0;i<n;i++){let r=0;for(let b=0;b<bits;b++)r|=((i>>b)&1)<<(bits-1-b);rev[i]=r;}
+  const cos=new Float32Array(n/2),sin=new Float32Array(n/2);
+  for(let i=0;i<n/2;i++){cos[i]=Math.cos(2*Math.PI*i/n);sin[i]=-Math.sin(2*Math.PI*i/n);}
+  const win=new Float32Array(n);for(let i=0;i<n;i++)win[i]=0.5-0.5*Math.cos(2*Math.PI*i/(n-1));
+  const re=new Float32Array(n),im=new Float32Array(n);
+  return fftCache[n]={n,rev,cos,sin,win,re,im};
+}
+function fftInPlace(F){
+  const n=F.n,re=F.re,im=F.im;
+  for(let size=2;size<=n;size<<=1){
+    const half=size>>1,step=n/size;
+    for(let i=0;i<n;i+=size)for(let j=0;j<half;j++){
+      const k=j*step,a=i+j,b=a+half;
+      const tr=re[b]*F.cos[k]-im[b]*F.sin[k],ti=re[b]*F.sin[k]+im[b]*F.cos[k];
+      re[b]=re[a]-tr;im[b]=im[a]-ti;re[a]+=tr;im[a]+=ti;
+    }
+  }
+}
+// Spektrum -> kekuatan tiap nada (E1..F#6) dengan pengurangan harmonik, lalu chroma & bass
+const PM0=28,PM1=90;
+const CP={RRISE:1.1,MERGE:1.2,SM:3,PEN:0.6,KEY:true,HG:0,HF:0.3,MR:0.5,LEAD:1.3,R7:0,R7M:0.6,HC:0.5,R7m:0.9,FP:0.06,FPF:0.3,SALALL:true,RA1:0.015,RA2:0.05,OH:0.01,B7:0.975,BM7:0.95,BS:0.94,BS2:0.92,H3:0.2};
+function noteSalience(x,sr){
+  const n=x.length,F=getFFT(n),re=F.re,im=F.im;
+  let e=0;
+  for(let i=0;i<n;i++){const j=F.rev[i];re[j]=x[i]*F.win[i];im[j]=0;e+=x[i]*x[i];}
+  fftInPlace(F);
+  const mag=new Float32Array(n/2);for(let k=1;k<n/2;k++)mag[k]=Math.hypot(re[k],im[k]);
+  const a=new Float32Array(PM1+1);
+  // tiap puncak spektrum diberikan ke satu nada terdekat (tidak melebar ke nada tetangga)
+  const kmax=Math.min(n/2-2,Math.ceil(440*Math.pow(2,(PM1+0.5-69)/12)*n/sr));
+  for(let k=2;k<=kmax;k++){
+    const m0=mag[k];if(m0<=mag[k-1]||m0<mag[k+1])continue;
+    const al=Math.log(mag[k-1]+1e-9),be=Math.log(m0),ga=Math.log(mag[k+1]+1e-9),den=al-2*be+ga;
+    const off=den<0?0.5*(al-ga)/den:0,f=(k+off)*sr/n,mf=69+12*Math.log2(f/440),m=Math.round(mf);
+    if(m<PM0||m>PM1||Math.abs(mf-m)>0.4)continue;
+    if(m0>a[m])a[m]=m0;
+  }
+  // buang lantai derau
+  const sorted=Array.from(a.subarray(PM0)).sort((p,q)=>p-q),floor=sorted[sorted.length>>1]*1.2;
+  for(let m=PM0;m<=PM1;m++)a[m]=Math.max(0,a[m]-floor);
+  // pengurangan harmonik: nada rendah "memiliki" harmoniknya
+  const H=[[12,.8],[19,.6],[24,.45],[28,.35],[31,.3],[34,.22],[36,.2]];
+  if(CP.HG>0)for(let m=PM0;m<=PM1;m++){if(a[m]<=0)continue;for(const[d,g]of H){const t=m+d;if(t>PM1)break;a[t]=Math.max(a[t]*CP.HF,a[t]-a[m]*g*CP.HG);}}
+  if(CP.H3>0){const b=Float32Array.from(a);for(let m=40;m<=PM1;m++){if(b[m]<=0)continue;for(const[d,g]of[[19,1],[28,0.6]]){const t=m+d;if(t>PM1)break;a[t]=Math.max(a[t]*0.15,a[t]-b[m]*g*CP.H3);}}}
+  return{a,rms:Math.sqrt(e/n)};
+}
+function chromaFromNotes(a){
+  const ch=new Float32Array(12),bass=new Float32Array(12);
+  let mx=0,mxT=0;for(let m=PM0;m<=PM1;m++){if(a[m]>mx)mx=a[m];if(m>=40&&a[m]>mxT)mxT=a[m];}
+  if(mx<=0)return{ch,bass,bassPc:-1};
+  for(let m=40;m<=PM1;m++){if(a[m]<=0||mxT<=0)continue;ch[m%12]+=Math.pow(a[m]/mxT,0.45);}
+  for(let m=PM0;m<=55;m++){if(a[m]<=0)continue;bass[m%12]+=Math.pow(a[m]/mx,0.45)*(m<=47?1:0.5);}
+  // nada bass = nada terendah yang cukup kuat
+  let bmx=0;for(let m=PM0;m<=55;m++)if(a[m]>bmx)bmx=a[m];
+  let bassPc=-1;if(bmx>mx*0.12)for(let m=PM0;m<=55;m++)if(a[m]>bmx*0.35){bassPc=m%12;break;}
+  return{ch,bass,bassPc};
+}
+function chromaOf(x,sr){const r=noteSalience(x,sr),c=chromaFromNotes(r.a);return{ch:c.ch,bass:c.bass,bassPc:c.bassPc,rms:r.rms,a:r.a};}
+const TYPES=[
+  {suf:'',iv:[0,4,7],w:[1,1,.8],bias:1},
+  {suf:'m',iv:[0,3,7],w:[1,1,.8],bias:1},
+  {suf:'7',iv:[0,4,7,10],w:[1,1,.8,.85],bias:'B7'},
+  {suf:'maj7',iv:[0,4,7,11],w:[1,1,.8,.85],bias:'BM7'},
+  {suf:'m7',iv:[0,3,7,10],w:[1,1,.8,.85],bias:'B7'},
+  {suf:'sus4',iv:[0,5,7],w:[1,1,.8],bias:'BS'},
+  {suf:'sus2',iv:[0,2,7],w:[1,1,.8],bias:'BS2'}];
+const TPL=[];
+for(const ty of TYPES)for(let r=0;r<12;r++){
+  const v=new Float32Array(12);ty.iv.forEach((iv,i)=>v[(r+iv)%12]=ty.w[i]);
+  let nrm=0;for(const a of v)nrm+=a*a;TPL.push({root:r,suf:ty.suf,iv:ty.iv,v,nrm:Math.sqrt(nrm),bias:ty.bias});
+}
+// kunci lagu (Krumhansl) -> chord diatonis dapat sedikit bonus
+const KMAJ=[6.35,2.23,3.48,2.33,4.38,4.09,2.52,5.19,2.39,3.66,2.29,2.88],KMIN=[6.33,2.68,3.52,5.38,2.6,3.53,2.54,4.75,3.98,2.69,3.34,3.17];
+function estimateKey(ch){
+  const corr=(p,r)=>{let mx=0,my=0;for(let i=0;i<12;i++){mx+=ch[(i+r)%12];my+=p[i];}mx/=12;my/=12;let sxy=0,sx=0,sy=0;
+    for(let i=0;i<12;i++){const a=ch[(i+r)%12]-mx,b=p[i]-my;sxy+=a*b;sx+=a*a;sy+=b*b;}return sxy/Math.sqrt(sx*sy+1e-12);};
+  let best={tonic:0,minor:false,r:-2};
+  for(let r=0;r<12;r++){const a=corr(KMAJ,r),b=corr(KMIN,r);if(a>best.r)best={tonic:r,minor:false,r:a};if(b>best.r)best={tonic:r,minor:true,r:b};}
+  return best;
+}
+function diatonicSet(key){
+  if(!key||key.r<0.5)return null;
+  const K=key.minor?(key.tonic+3)%12:key.tonic,set=new Set();
+  const add=(d,sufs)=>sufs.forEach(su=>set.add(((K+d)%12)+'|'+su));
+  add(0,['','maj7','sus2','sus4']);add(2,['m','m7']);add(4,['m','m7']);add(5,['','maj7','sus2']);add(7,['','7','sus4']);add(9,['m','m7']);
+  add(4,['','7']); // V dari relatif minor (mis. E/E7 di kunci Am)
+  return set;
+}
+let KEYSET=null;
+function scoreAll(ch,bass,bassPc){
+  const out=new Float32Array(TPL.length);
+  let mx=0,sum=0;for(const a of ch){if(a>mx)mx=a;sum+=a;}
+  if(mx<=0)return out;
+  const mean=sum/12,c=new Float32Array(12);let nc=0;
+  for(let i=0;i<12;i++){const v=Math.max(0,ch[i]-mean*0.4)/mx;c[i]=Math.pow(v,1.4);nc+=c[i]*c[i];}
+  nc=Math.sqrt(nc);if(nc<=0)return out;
+  if(bassPc==null&&bass){let bm=0,bs=0;for(let i=0;i<12;i++){bs+=bass[i];if(bass[i]>bm){bm=bass[i];bassPc=i;}}if(bm<bs*0.3)bassPc=-1;}
+  TPL.forEach((t,i)=>{let d=0;for(let k=0;k<12;k++)d+=c[k]*t.v[k];
+    let sc=d/(nc*t.nrm)*(typeof t.bias==='string'?CP[t.bias]:t.bias);
+    if(bassPc!=null&&bassPc>=0){if(t.root===bassPc)sc+=0.08;else if(!t.iv.some(iv=>(t.root+iv)%12===bassPc))sc-=0.03;}
+    if(KEYSET&&KEYSET.has(t.root+'|'+t.suf))sc+=0.03;
+    out[i]=sc;});
+  return out;
+}
+function matchChord(ch,bass,bassPc){
+  const sc=scoreAll(ch,bass,bassPc);let best=-1,bs=0;
+  for(let i=0;i<sc.length;i++)if(sc[i]>bs){bs=sc[i];best=i;}
+  return bs<0.6?{id:-1,score:bs}:{id:best,score:bs};
+}
+const chordName=id=>NOTE[TPL[id].root]+TPL[id].suf;
+
+/* ---------- bentuk chord (diagram) ---------- */
+const OPEN={'C':[-1,3,2,0,1,0],'D':[-1,-1,0,2,3,2],'G':[3,2,0,0,0,3],'Dm':[-1,-1,0,2,3,1],'D7':[-1,-1,0,2,1,2],'G7':[3,2,0,0,0,1],'C7':[-1,3,2,3,1,0],'B7':[-1,2,1,2,0,2],
+  'Cmaj7':[-1,3,2,0,0,0],'Fmaj7':[-1,-1,3,2,1,0],'Dmaj7':[-1,-1,0,2,2,2],'Gmaj7':[3,2,0,0,0,2],'Dm7':[-1,-1,0,2,1,1],'Dsus4':[-1,-1,0,2,3,3],'Dsus2':[-1,-1,0,2,3,0],'Gsus4':[3,-1,0,0,1,3],'Csus2':[-1,3,0,0,1,3],'Csus4':[-1,3,3,0,1,1]};
+const SHAPE_E={'':[0,2,2,1,0,0],'m':[0,2,2,0,0,0],'7':[0,2,0,1,0,0],'maj7':[0,-1,1,1,0,-1],'m7':[0,2,0,0,0,0],'sus4':[0,2,2,2,0,0],'sus2':null};
+const SHAPE_A={'':[-1,0,2,2,2,0],'m':[-1,0,2,2,1,0],'7':[-1,0,2,0,2,0],'maj7':[-1,0,2,1,2,0],'m7':[-1,0,2,0,1,0],'sus4':[-1,0,2,2,3,0],'sus2':[-1,0,2,2,0,0]};
+function shapeFor(id,off=0){
+  if(id<0)return null;
+  const T=tun(),t=TPL[id],pc=((t.root+T.shift+off)%12+12)%12,key=NOTE[pc]+t.suf;
+  let s=OPEN[key]?OPEN[key].slice():null;
+  if(!s){
+    const r6=(pc-4+12)%12,r5=(pc-9+12)%12,E=SHAPE_E[t.suf],A=SHAPE_A[t.suf];
+    const useE=E&&(r6<=r5||!A);
+    const r=useE?r6:r5,base=useE?E:A;
+    s=base.map(f=>f<0?-1:f+r);
+  }
+  if(T.drop&&s[0]>=0)s[0]+=2;
+  return s;
+}
+function diagramSVG(s){
+  if(!s)return '<svg viewBox="0 0 112 136" aria-hidden="true"><text x="56" y="72" text-anchor="middle" class="dg-txt">belum ada</text></svg>';
+  const fr=s.filter(f=>f>0),mx=fr.length?Math.max(...fr):0,mn=fr.length?Math.min(...fr):0;
+  const base=mx<=4?1:mn,rows=Math.max(4,mx-base+1);
+  const x0=22,sx=15,y0=28,sy=Math.min(22,96/rows),xs=i=>x0+i*sx;
+  let o='<svg viewBox="0 0 112 136" aria-hidden="true">';
+  for(let j=0;j<=rows;j++)o+=`<line class="dg-line" x1="${x0}" y1="${y0+j*sy}" x2="${xs(5)}" y2="${y0+j*sy}"/>`;
+  for(let i=0;i<6;i++)o+=`<line class="dg-line" x1="${xs(i)}" y1="${y0}" x2="${xs(i)}" y2="${y0+rows*sy}"/>`;
+  if(base===1)o+=`<line class="dg-nut" x1="${x0-1}" y1="${y0}" x2="${xs(5)+1}" y2="${y0}"/>`;
+  else o+=`<text class="dg-txt" x="${x0-6}" y="${y0+sy*0.5+4}" text-anchor="end">${base}</text>`;
+  const lowest=s.findIndex(f=>f>=0);
+  if(mn>0&&s[5]===mn&&s[lowest]===mn&&s.filter(f=>f===mn).length>=3){
+    const y=y0+(mn-base+0.5)*sy;o+=`<rect class="dg-dot" x="${xs(lowest)-6}" y="${y-6}" width="${xs(5)-xs(lowest)+12}" height="12" rx="6"/>`;
+  }
+  s.forEach((f,i)=>{
+    const x=xs(i);
+    if(f<0)o+=`<path class="dg-mark" d="M${x-4} 10l8 8M${x+4} 10l-8 8"/>`;
+    else if(f===0)o+=`<circle class="dg-mark" cx="${x}" cy="14" r="4.5"/>`;
+    else o+=`<circle class="dg-dot" cx="${x}" cy="${y0+(f-base+0.5)*sy}" r="6.2"/>`;
+  });
+  return o+'</svg>';
+}
+
+/* ---------- pemotong nada ---------- */
+function makeSegmenter(track,gateRef){
+  let cur=null,cand=null,gap=0,rmsS=0;
+  function close(t){if(!cur)return;if(t!=null)cur.t1=Math.max(cur.t1,t);if(cur.t1-cur.t0<0.05&&track.notes[track.notes.length-1]===cur)track.notes.pop();cur=null;}
+  function open(t0,t1,m){cur={t0,t1,midi:m};track.notes.push(cur);}
+  return{
+    feed(f){
+      const r=f.midi==null?null:Math.round(f.midi);
+      const onset=f.rms>rmsS*1.8&&f.rms>gateRef()*2;
+      rmsS=rmsS*0.85+f.rms*0.15;
+      if(r==null){gap++;cand=null;if(cur&&gap>=3)close();return;}
+      gap=0;
+      if(cur&&r===cur.midi){
+        if(onset&&f.t-cur.t0>0.1){close(f.t);open(f.t,f.t,r);}else cur.t1=f.t;
+        cand=null;return;
+      }
+      if(cand&&cand.midi===r)cand.n++;else cand={midi:r,n:1,t0:f.t};
+      if(cand.n>=3){close(cand.t0);open(cand.t0,f.t,r);cand=null;}
+    },
+    finish(){close();}
+  };
+}
+
+/* ---------- pilih posisi fret ---------- */
+function choose(m,prev){
+  const T=tun(),c=[];
+  T.strings.forEach((o,s)=>{const f=m-o;if(f>=0&&f<=maxF())c.push({s,f});});
+  if(!c.length){ // di luar jangkauan senar: geser satu/dua oktaf supaya tetap masuk TAB (ditandai kurung)
+    for(const sh of[12,-12,24,-24]){T.strings.forEach((o,s)=>{const f=m+sh-o;if(f>=0&&f<=maxF())c.push({s,f,oct:sh});});if(c.length)break;}
+    if(!c.length)return{pos:null,alts:[]};
+  }
+  let best=null,bc=1e9;
+  for(const p of c){
+    let cost=prev?Math.abs(p.f-prev.f)+Math.abs(p.s-prev.s)*0.5+(p.f===0?-0.4:0):p.f*0.35+(p.f===0?-0.2:0);
+    if(p.f>12)cost+=(p.f-12)*0.5;
+    if(cost<bc){bc=cost;best=p;}
+  }
+  return{pos:best,alts:c.filter(p=>p!==best)};
+}
+function assignAll(track){
+  let anchor=null,prevS=0;
+  for(const n of track.notes){
+    const r=choose(n.midi,anchor==null?null:{s:prevS,f:anchor});
+    n.pos=r.pos;n.alts=r.alts;
+    if(r.pos){prevS=r.pos.s;if(r.pos.f>0)anchor=r.pos.f;}
+  }
+}
+function computeRange(track){
+  const ms=track.notes.map(n=>n.midi);
+  let lo=ms.length?Math.min(...ms)-3:tun().strings[0]-2;
+  let hi=ms.length?Math.max(...ms)+3:lo+28;
+  if(hi-lo<16){const c=(hi+lo)/2;lo=c-8;hi=c+8;}
+  track.range={lo,hi};
+}
+
+
+/* ---------- pelacak melodi dominan (salience harmonik + Viterbi) untuk lagu berpengiring ---------- */
+async function salienceTrack(x,sr,hop,onP){
+  const n=2048,F=getFFT(n),re=F.re,im=F.im;
+  const BMIN=75,S=Math.floor(60*Math.log2(1400/BMIN))+1; // 20 sen per state
+  const kmax=Math.min(n/2-2,Math.floor(5000*n/sr));
+  const sal=[],times=[],peakAmp=new Float32Array(kmax+2);
+  for(let c=0,o=0;o+n<=x.length+n/2;c++,o=c*hop){
+    const st=o-n/2;
+    for(let i=0;i<n;i++){const j=F.rev[i],v=(st+i>=0&&st+i<x.length)?x[st+i]:0;re[j]=v*F.win[i];im[j]=0;}
+    fftInPlace(F);
+    let mx=0;for(let k=1;k<=kmax+1;k++){const m=Math.hypot(re[k],im[k]);peakAmp[k]=m;if(m>mx)mx=m;}
+    const v=new Float32Array(S),v1=new Float32Array(S);
+    if(mx>1e-4){
+      for(let k=2;k<=kmax;k++){
+        const m=peakAmp[k];if(m<mx*0.01||m<peakAmp[k-1]||m<peakAmp[k+1])continue;
+        const a=Math.log(peakAmp[k-1]+1e-9),b=Math.log(m),cc=Math.log(peakAmp[k+1]+1e-9),den=a-2*b+cc;
+        const off=den<0?0.5*(a-cc)/den:0,f=(k+off)*sr/n,amp=Math.pow(m/mx,0.7);
+        for(let h=1;h<=8;h++){
+          const f0=f/h;if(f0<BMIN)break;if(f0>1400)continue;
+          const bc=60*Math.log2(f0/BMIN),w=amp*Math.pow(0.8,h-1);
+          const lo=Math.max(0,Math.ceil(bc-5)),hi=Math.min(S-1,Math.floor(bc+5));
+          for(let b2=lo;b2<=hi;b2++){const d=(b2-bc)/5,q=w*Math.cos(d*Math.PI/2)**2;v[b2]+=q;if(h===1&&q>v1[b2])v1[b2]=q;}
+        }
+      }
+    }
+    // calon nada tanpa fundamental yang terdengar -> kemungkinan sub-harmonik palsu
+    for(let b2=0;b2<S;b2++)if(v1[b2]<CP.FP)v[b2]*=CP.FPF;
+    sal.push(v);times.push(o/sr);
+    if(c%300===299){onP&&onP(0.8*o/x.length);await tick0();}
+  }
+  // normalisasi global
+  const tops=sal.map(v=>{let m=0;for(const a of v)if(a>m)m=a;return m;}).sort((a,b)=>a-b);
+  const ref=tops[Math.floor(tops.length*0.9)]||1;
+  // Viterbi: S pitch state + 1 state diam
+  const U=S,NS=S+1,LOC=5,LC=0.03,JMP=0.35,VU=0.45,UTH=0.32;
+  let V=new Float32Array(NS);const back=[];
+  for(let t=0;t<sal.length;t++){
+    const e=sal[t],nv=new Float32Array(NS),bk=new Int16Array(NS);
+    let gm=-1e9,ga=0;for(let s2=0;s2<S;s2++)if(V[s2]>gm){gm=V[s2];ga=s2;}
+    for(let s2=0;s2<S;s2++){
+      let best=V[U]-VU,arg=U;
+      if(gm-JMP>best){best=gm-JMP;arg=ga;}
+      for(let d=-LOC;d<=LOC;d++){const q=s2+d;if(q<0||q>=S)continue;const val=V[q]-LC*Math.abs(d);if(val>best){best=val;arg=q;}}
+      nv[s2]=best+Math.min(1.3,e[s2]/ref);bk[s2]=arg;
+    }
+    let bu=V[U],au=U;if(gm-VU>bu){bu=gm-VU;au=ga;}
+    nv[U]=bu+UTH;bk[U]=au;
+    V=nv;back.push(bk);
+  }
+  const path=new Int16Array(sal.length);
+  if(sal.length){let st=0,bm=-1e9;for(let s2=0;s2<NS;s2++)if(V[s2]>bm){bm=V[s2];st=s2;}
+    for(let t=sal.length-1;t>=0;t--){path[t]=st;st=back[t][st];}}
+  return {times,path,U,sal,ref,BMIN};
+}
+
+function decodeChords(cf,cg,hopS,track){
+  const SM=CP.SM,K=TPL.length,NS=K+1,PEN=CP.PEN,NSC=0.6;
+  const tot=new Float32Array(12);for(const f of cf)if(f.rms>=cg)for(let p=0;p<12;p++)tot[p]+=f.ch[p];
+  track.key=estimateKey(tot);KEYSET=CP.KEY?diatonicSet(track.key):null;
+  const back=[];let V=new Float32Array(NS);
+  for(let i=0;i<cf.length;i++){
+    const em=new Float32Array(NS);
+    if(cf[i].rms<cg){em[K]=1;}
+    else{
+      const acc=new Float32Array(12),ba=new Float32Array(12);
+      for(let k=i-SM;k<=i+SM;k++){if(k<0||k>=cf.length||cf[k].rms<cg)continue;const w=1-Math.abs(k-i)/(SM+1);
+        for(let p=0;p<12;p++){acc[p]+=cf[k].ch[p]*w;ba[p]+=cf[k].bass[p]*w;}}
+      em.set(scoreAll(acc,ba));em[K]=NSC;
+    }
+    let pm=-1e9,pa=0;for(let j=0;j<NS;j++)if(V[j]>pm){pm=V[j];pa=j;}
+    const nv=new Float32Array(NS),bk=new Int16Array(NS);
+    for(let j=0;j<NS;j++){const stay=V[j],sw=pm-PEN;
+      if(i===0||stay>=sw){nv[j]=stay+em[j];bk[j]=j;}else{nv[j]=sw+em[j];bk[j]=pa;}}
+    V=nv;back.push(bk);
+  }
+  KEYSET=null;
+  const lab=new Array(cf.length);
+  if(cf.length){let st=0,bm=-1e9;for(let j=0;j<NS;j++)if(V[j]>bm){bm=V[j];st=j;}
+    for(let i=cf.length-1;i>=0;i--){lab[i]=st===K?-1:st;st=back[i][st];}}
+  let segs=[];
+  for(let i=0;i<lab.length;i++){
+    const t=cf[i].t-hopS/2;
+    if(segs.length&&segs[segs.length-1].id===lab[i])segs[segs.length-1].t1=t+hopS;
+    else segs.push({id:lab[i],t0:t,t1:t+hopS});
+  }
+  segs=segs.filter(sg=>sg.t1-sg.t0>=0.3||sg.id<0);
+  // tentukan ulang chord 7 / maj7 / m7 dari kekuatan nada ke-7 dibanding nada ke-3
+  track.r7=[];
+  if(CP.R7)for(const sg of segs){
+    if(sg.id<0)continue;const T=TPL[sg.id],r=T.root;
+    if(!['','m','7','maj7','m7'].includes(T.suf))continue;
+    const minor=T.suf==='m'||T.suf==='m7';
+    const acc=new Float32Array(PM1+1);let n=0;
+    for(const f of cf){if(f.t<sg.t0||f.t>sg.t1||f.rms<cg||!f.a)continue;for(let m=40;m<=PM1;m++)acc[m]+=f.a[m];n++;}
+    if(!n)continue;
+    const pk=(pc,comp)=>{let v=0;for(let m=40;m<=PM1;m++){if(m%12!==pc)continue;let x=acc[m];if(comp)x-=CP.HC*((m-19>=PM0?acc[m-19]:0)+0.6*(m-28>=PM0?acc[m-28]:0));if(x>v)v=x;}return Math.max(0,v);};
+    const a3=pk((r+(minor?3:4))%12),a5=pk((r+7)%12),ref=Math.max(1e-9,Math.min(a3,a5));
+    const b7=pk((r+10)%12,true)/ref,M7=pk((r+11)%12,true)/ref;
+    track.r7.push({t0:sg.t0,t1:sg.t1,root:r,minor,b7,M7});
+    let suf=minor?'m':'';
+    if(minor){if(b7>CP.R7m)suf='m7';}
+    else if(b7>CP.R7&&b7>=M7)suf='7';else if(M7>CP.R7M)suf='maj7';
+    const id=TPL.findIndex(t=>t.root===r&&t.suf===suf);if(id>=0)sg.id=id;
+  }
+  const out=[];for(const sg of segs){if(sg.id<0)continue;const p=out[out.length-1];if(p&&p.id===sg.id&&sg.t0-p.t1<0.35)p.t1=sg.t1;else out.push({t0:Math.max(0,sg.t0),t1:sg.t1,id:sg.id,name:chordName(sg.id)});}
+  // buang chord sisa gema yang sangat pendek di ujung lagu
+  while(out.length>1&&out[out.length-1].t1-out[out.length-1].t0<0.9)out.pop();
+  // rapikan: chord pendek yang root-nya sama dengan tetangga digabung (mis. Gsus4 sesaat lalu G)
+  for(let pass=0;pass<2;pass++)for(let i=0;i<out.length-1;i++){
+    const a=out[i],b=out[i+1];if(TPL[a.id].root!==TPL[b.id].root||b.t0-a.t1>0.35)continue;
+    const da=a.t1-a.t0,db=b.t1-b.t0;if(Math.min(da,db)>CP.MERGE)continue;
+    const keep=da>=db?a.id:b.id;a.id=keep;a.name=chordName(keep);a.t1=b.t1;out.splice(i+1,1);i--;}
+  return out;
+}
+function localGate(r,W){
+  const n=r.length,out=new Float32Array(n);if(!n)return out;
+  let G=0;for(const v of r)if(v>G)G=v;
+  const srt=Array.from(r).sort((a,b)=>a-b),noise=srt[Math.floor(n*0.03)]||0;
+  const floor=Math.min(G*0.05,Math.max(0.0015,G*0.012,noise*2));
+  // maksimum lokal dengan deque
+  const dq=[];let j=0;
+  for(let i=0;i<n;i++){
+    while(j<n&&j<=i+W){while(dq.length&&r[dq[dq.length-1]]<=r[j])dq.pop();dq.push(j);j++;}
+    while(dq.length&&dq[0]<i-W)dq.shift();
+    out[i]=Math.max(floor,Math.min(G*0.07,r[dq[0]]*0.08));
+  }
+  return out;
+}
+/* ---------- analisis file ---------- */
+async function detectOnsets(x,sr,low){
+  const n=low?(sr<16000?512:1024):1024,hop=Math.round(sr*(low?0.01:CP.OH)),F=getFFT(n),re=F.re,im=F.im;
+  const k0=Math.floor((low?60:150)*n/sr),k1=Math.min(n/2-1,Math.floor(5000*n/sr));
+  let prev=new Float32Array(k1+1),cur=new Float32Array(k1+1);
+  const flux=[],tt=[];
+  for(let o=0,c=0;o+n<=x.length;o+=hop,c++){
+    for(let i=0;i<n;i++){const j=F.rev[i];re[j]=x[o+i]*F.win[i];im[j]=0;}
+    fftInPlace(F);
+    let fl=0;
+    for(let k=k0;k<=k1;k++){const v=Math.log1p(100*Math.hypot(re[k],im[k]));const d=v-prev[k];if(d>0)fl+=d;cur[k]=v;}
+    flux.push(c?fl:0);tt.push((o+n/2)/sr);
+    const tmp=prev;prev=cur;cur=tmp;
+    if(c%400===399)await tick0();
+  }
+  let mx=0;for(const v of flux)if(v>mx)mx=v;
+  const on=[];let last=-1;
+  for(let i=1;i<flux.length-1;i++){
+    let lm=true;for(let k=Math.max(0,i-3);k<=Math.min(flux.length-1,i+3);k++)if(flux[k]>flux[i]){lm=false;break;}
+    if(!lm)continue;
+    let sum=0,cnt=0;for(let k=Math.max(0,i-16);k<=Math.min(flux.length-1,i+4);k++){sum+=flux[k];cnt++;}
+    if(flux[i]<sum/cnt*1.5+mx*0.05)continue;
+    const t=tt[i]-0.01;
+    if(last>=0&&t-last<0.05)continue;
+    on.push(t);last=t;
+  }
+  return on;
+}
+function buildNotes(frames,onsets,reattack){
+  const notes=[];if(!frames.length)return notes;
+  const dt=frames.length>1?frames[1].t-frames[0].t:0.01;
+  // batas: onset + perubahan pitch stabil tanpa onset (legato/slide)
+  const bounds=onsets.slice();
+  let run=null,base=null,bn=0;
+  for(let i=0;i<frames.length;i++){
+    const m=frames[i].midi;if(m==null){base=null;run=null;bn=0;continue;}
+    const r=Math.round(m);
+    if(base==null){base=r;bn=1;continue;}
+    if(r===base){bn++;run=null;continue;}
+    if(run&&run.r===r)run.n++;else run={r,n:1,i};
+    if(run.n>=5){
+      let abrupt=false;
+      for(let k=Math.max(1,run.i-2);k<=run.i;k++){const p=frames[k-1].midi,q=frames[k].midi;if(p==null||q==null||Math.abs(q-p)>=0.6){abrupt=true;break;}}
+      if(bn>=5&&abrupt)bounds.push(frames[run.i].t-dt*0.5);
+      base=r;bn=run.n;run=null;
+    }
+  }
+  bounds.sort((a,b)=>a-b);
+  const B=[];for(const b of bounds)if(!B.length||b-B[B.length-1]>0.04)B.push(b);
+  B.push(frames[frames.length-1].t+1);
+  let fi=0;
+  const seg=(s,e)=>{
+    // kumpulkan frame bersuara dalam [s,e)
+    const fr=[];while(fi<frames.length&&frames[fi].t<s)fi++;
+    let j=fi;while(j<frames.length&&frames[j].t<e){if(frames[j].midi!=null)fr.push(frames[j]);j++;}
+    if(fr.length<3)return;
+    // pecah lagi kalau ada jeda tanpa suara > 60ms
+    let groups=[[fr[0]]];
+    for(let k=1;k<fr.length;k++){if(fr[k].t-fr[k-1].t>0.035)groups.push([]);groups[groups.length-1].push(fr[k]);}
+    for(const g of groups){
+      if(g.length<3)continue;
+      const t0=g[0].t-dt*0.5,t1=g[g.length-1].t+dt*0.5;
+      const body=g.filter(f=>f.t>=t0+0.03);
+      const use=(body.length>=3?body:g).map(f=>f.midi).sort((a,b)=>a-b);
+      const midi=Math.round(use[use.length>>1]);
+      if(t1-t0<0.05)continue;
+      notes.push({t0,t1,midi});
+    }
+  };
+  let prevB=frames[0].t-1;
+  for(const b of B){seg(prevB,b);prevB=b;}
+  // gabungkan nada sama yang bersambung tanpa onset
+  const onSet=onsets;
+  const out=[];
+  for(const n of notes){
+    const p=out[out.length-1];
+    const onsetHere=onSet.some(o=>o>(p?p.t1:n.t0)-0.03&&o<n.t0+0.03)||(p&&n.t0-p.t1>0.035);
+    if(p&&p.midi===n.midi&&n.t0-p.t1<0.06&&(!onsetHere||(reattack&&!reattack(n.t0,n.midi))))p.t1=n.t1;else out.push(n);
+  }
+  return out;
+}
+const tick0=()=>new Promise(r=>setTimeout(r,0));
+async function analyzeHigh(samples,sr,len,name,source,onP){
+  // melodi
+  const f2=Math.max(1,Math.round(sr/22050)),sr2=sr/f2;
+  const x=downsampleLP(samples,f2,len);
+  const N=1024,det=makeDetector(sr2,N),hop=Math.max(1,Math.round(sr2*0.01));
+  const st=await salienceTrack(x,sr2,hop,p=>onP&&onP(0.5*p));
+  const S0=12*Math.log2(st.BMIN/440)+69,nF=st.path.length;
+  const slice=t=>{const o=Math.round(t*sr2-N/2);return(o>=0&&o+N<=x.length)?x.subarray(o,o+N):null;};
+  const frames=new Array(nF);let maxR=0;
+  for(let i=0;i<nF;i++){
+    const t=i*hop/sr2,o=Math.max(0,Math.round(t*sr2-N/2)),e=Math.min(x.length,o+N);let q=0;
+    for(let k=o;k<e;k++)q+=x[k]*x[k];const rms=Math.sqrt(q/Math.max(1,e-o));
+    frames[i]={t,midi:null,rms};if(rms>maxR)maxR=rms;
+  }
+  // ambang suara adaptif: ikut keras-pelannya bagian lagu (bagian pelan tetap terbaca)
+  const gateArr=localGate(frames.map(f=>f.rms),Math.round(2.5*sr2/hop));
+  for(let i=0;i<nF;i++)frames[i].g=gateArr[i];
+  const gate=Math.max(0.003,maxR*0.07);
+  // ada iringan? (cek sebagian frame dengan YIN: kalau jarang yakin berarti polifonik)
+  let loud=0,unsure=0;
+  for(let i=0;i<nF;i+=6){if(frames[i].rms<frames[i].g*2)continue;const sl=slice(frames[i].t);if(!sl)continue;loud++;const r=det(sl);if(!r.f||r.clar<0.88)unsure++;}
+  const backing=loud>4&&unsure/loud>0.3;
+  for(let i=0;i<nF;i++){
+    const fr=frames[i];if(fr.rms<fr.g)continue;
+    const s2=st.path[i];
+    if(s2!==st.U){
+      const v=st.sal[i];let off=0;
+      if(s2>0&&s2<st.U-1){const a=v[s2-1],b=v[s2],c=v[s2+1],den=a-2*b+c;if(den<0)off=Math.max(-0.5,Math.min(0.5,0.5*(a-c)/den));}
+      fr.midi=S0+(s2+off)/5;
+    }else if(!backing){const sl=slice(fr.t);if(sl){const r=det(sl);if(r.f)fr.midi=toMidi(r.f);}}
+  }
+  const fidx=t=>Math.max(0,Math.min(nF-1,Math.round(t*sr2/hop)));
+  const salAt=(a,b,m)=>{const c=Math.round((m-S0)*5);let s2=0,n2=0;
+    for(let i=fidx(a);i<=fidx(b);i++){const v=st.sal[i];for(let k=c-3;k<=c+3;k++)if(k>=0&&k<v.length)s2+=v[k];n2++;}return n2?s2/n2:0;};
+  const rmsAt=(a,b)=>{let s2=0,n2=0;for(let i=fidx(a);i<=fidx(b);i++){s2+=frames[i].rms;n2++;}return n2?s2/n2:0;};
+  const reatt=backing?(t,m)=>salAt(t+CP.RA1,t+CP.RA2,m)>salAt(t-CP.RA2,t-CP.RA1,m)*1.2:(t,m)=>rmsAt(t+0.01,t+0.05)>rmsAt(t-0.05,t-0.01)*CP.RRISE;
+  for(const f of frames)if(f.rms<f.g)f.midi=null;
+  const raw=frames.map(f=>f.midi);
+  for(let i=0;i<frames.length;i++){
+    if(raw[i]==null)continue;
+    const w=[];for(let k=i-2;k<=i+2;k++)if(k>=0&&k<raw.length&&raw[k]!=null)w.push(raw[k]);
+    w.sort((a,b)=>a-b);frames[i].midi=w[w.length>>1];
+  }
+  const track={source,name,frames,notes:[],chords:[],duration:len/sr};
+  const onsets=await detectOnsets(x,sr2);
+  track.notes=buildNotes(frames,onsets,reatt);
+  assignAll(track);computeRange(track);
+  // chord
+  const f4=Math.max(1,Math.round(sr/11025)),sr4=sr/f4,x4=downsampleLP(samples,f4,len);
+  const CN=4096,hop4=Math.round(sr4*0.1),tot4=Math.max(0,Math.floor((x4.length-CN)/hop4)+1);
+  const raw4=[];let maxC=0;
+  for(let i=0;i<tot4;i++){
+    const o=i*hop4,c=chromaOf(x4.subarray(o,o+CN),sr4);
+    raw4.push({t:(o+CN/2)/sr4,a:c.a,ch:c.ch,bass:c.bass,rms:c.rms});if(c.rms>maxC)maxC=c.rms;
+    if(i%40===39){onP&&onP(0.75+0.2*i/tot4);await tick0();}
+  }
+  const cg=Math.max(0.002,maxC*0.08);
+  let chords=decodeChords(raw4,cg,hop4/sr4,track);
+  // ada melodi solo di atas iringan? (banyak nada melodi bukan anggota chord) -> buang nada solo lalu ulangi
+  if(CP.MR>0&&track.notes.length>=6){
+    let inC=0,tot=0;
+    for(const nt of track.notes){const c=chords.find(c=>nt.t0>=c.t0&&nt.t0<c.t1);if(!c)continue;tot++;const T=TPL[c.id];if(T.iv.some(iv=>(T.root+iv)%12===nt.midi%12))inC++;}
+    track.leadRatio=tot?1-inC/tot:0;
+    // seberapa menonjol nada melodi dibanding nada lain (solo biasanya jauh lebih keras)
+    const dom=[];
+    for(const nt of track.notes){const m=nt.midi;if(m<40||m>PM1)continue;const ds=[];
+      for(const f of raw4){if(f.t<nt.t0+0.05||f.t>nt.t1)continue;let other=0;for(let q=40;q<=PM1;q++){if(Math.abs(q-m)%12===0)continue;if(f.a[q]>other)other=f.a[q];}ds.push(f.a[m]/(other+1e-9));}
+      if(ds.length){ds.sort((x,y)=>x-y);dom.push(ds[ds.length>>1]);}}
+    dom.sort((x,y)=>x-y);track.leadDom=dom.length?dom[dom.length>>1]:0;
+    if(tot&&track.leadDom>=CP.LEAD){
+      const cf2=raw4.map(f=>{
+        const a=Float32Array.from(f.a);let changed=false;
+        for(const nt of track.notes){if(nt.t1<f.t-0.18)continue;if(nt.t0>f.t+0.18)break;
+          const m=nt.midi;if(m<PM0||m>PM1)continue;
+          let other=0;for(let q=40;q<=PM1;q++){if(Math.abs(q-m)%12===0)continue;if(a[q]>other)other=a[q];}
+          if(a[m]>other*CP.MR){a[m]=0;if(m+12<=PM1)a[m+12]*=0.3;if(m+19<=PM1)a[m+19]*=0.5;if(m+24<=PM1)a[m+24]*=0.3;changed=true;}}
+        if(!changed)return f;const cc=chromaFromNotes(a);return{...f,ch:cc.ch,bass:cc.bass};
+      });
+      chords=decodeChords(cf2,cg,hop4/sr4,track);
+    }
+  }
+  track.chords=chords;
+  onP&&onP(1);
+  return track;
+}
+
+
+/* ---------- analisis nada rendah (bass) ---------- */
+async function analyzeLow(samples,sr,len,name,source,onP){
+  const factor=Math.max(1,Math.round(sr/11025)),sr2=sr/factor;
+  const x=downsampleLP(samples,factor,len);
+  const N=1024,det=makeDetector(sr2,N,27,460,0.3),hop=Math.max(1,Math.round(sr2*0.01));
+  const total=Math.max(0,Math.floor((x.length-N)/hop)+1);
+  const frames=[];let maxR=0;
+  for(let i=0;i<total;i++){
+    const o=i*hop,r=det(x.subarray(o,o+N));
+    frames.push({t:(o+N/2)/sr2,midi:toMidi(r.f),rms:r.rms});
+    if(r.rms>maxR)maxR=r.rms;
+    if(i%200===199){onP&&onP(i/total);await tick0();}
+  }
+  const gate=Math.max(0.003,maxR*0.07);
+  const gArr=localGate(frames.map(f=>f.rms),Math.round(2.5/0.01));
+  frames.forEach((f,i)=>{if(f.rms<gArr[i])f.midi=null;});
+  const raw=frames.map(f=>f.midi);
+  for(let i=0;i<frames.length;i++){
+    if(raw[i]==null)continue;
+    const w=[];for(let k=i-2;k<=i+2;k++)if(k>=0&&k<raw.length&&raw[k]!=null)w.push(raw[k]);
+    w.sort((a,b)=>a-b);frames[i].midi=w[w.length>>1];
+  }
+  const track={source,name,frames,notes:[],duration:len/sr};
+  const onsets=await detectOnsets(x,sr2,true);
+  track.notes=buildNotes(frames,onsets,null);
+  assignAll(track);computeRange(track);
+  return track;
+}
+
+
+Object.assign(CP,{SEP_HP:150,SEP_LMIN:110,SEP_LV:0.15,SEP_TW:16,SEP_FW:8,SEP_SUB:45,SEP_LW:0.02,SEP_BW:0.03,SEP_BWM:1.3,SEP_EXT:5,SEP_2P:false});
+/* ---------- pemisah instrumen cepat (tanpa AI): HPSS + topeng harmonik mengikuti nada bass & melodi ---------- */
+function yinGeneric(sr,N,fmin,fmax){
+  const tauMax=Math.min(Math.floor(N/2)-1,Math.ceil(sr/fmin)),tauMin=Math.max(2,Math.floor(sr/fmax));
+  const W=N-tauMax,d=new Float32Array(tauMax+2);
+  return function(x){
+    let e=0;for(let i=0;i<N;i++)e+=x[i]*x[i];const rms=Math.sqrt(e/N);
+    if(rms<1e-5)return{f:0,clar:0,rms};
+    d[0]=1;let run=0;
+    for(let tau=1;tau<=tauMax;tau++){let s=0;for(let i=0;i<W;i++){const v=x[i]-x[i+tau];s+=v*v;}run+=s;d[tau]=run>0?s*tau/run:1;}
+    let tau=-1;for(let t=tauMin;t<=tauMax;t++){if(d[t]<0.2){while(t+1<=tauMax&&d[t+1]<d[t])t++;tau=t;break;}}
+    if(tau<0)return{f:0,clar:0,rms};
+    let bt=tau;if(tau>1&&tau<tauMax){const a=d[tau-1],b=d[tau],c=d[tau+1],den=a+c-2*b;if(den>0)bt=tau+(a-c)/(2*den);}
+    return{f:sr/bt,clar:1-d[tau],rms};
+  };
+}
+function medianSmall(a,n,tmp){
+  for(let i=0;i<n;i++){const v=a[i];let j=i-1;while(j>=0&&tmp[j]>v){tmp[j+1]=tmp[j];j--;}tmp[j+1]=v;}
+  return tmp[n>>1];
+}
+// x: mono Float32 di sr (disarankan 22050). Hasil: {drums,bass,other,vocals,bassF0,leadF0,hop}
+async function separateDSP(x,sr,onP,opt={}){
+  const N=2048,H=512,K=N/2+1,binHz=sr/N,len=x.length;
+  const P=(a,b)=>onP&&onP(a,b);
+  // 1) jalur nada bass: low-pass + YIN
+  P(0.02,'Melacak nada bass…');
+  const dsB=Math.max(1,Math.round(sr/5512)),srB=sr/dsB,xb=downsampleLP(x,dsB,len);
+  const lpB=new Float32Array(xb.length);{const a=Math.exp(-2*Math.PI*320/srB);let y1=0,y2=0;for(let i=0;i<xb.length;i++){y1=a*y1+(1-a)*xb[i];y2=a*y2+(1-a)*y1;lpB[i]=y2;}}
+  const nFr=Math.ceil(len/H)+1,NB=512,yb=yinGeneric(srB,NB,30,320);
+  const bassF0=new Float32Array(nFr);let bmax=0;const brms=new Float32Array(nFr);
+  for(let i=0;i<nFr;i++){
+    const c=Math.round(i*H/dsB)-NB/2;if(c<0||c+NB>lpB.length)continue;
+    const r=yb(lpB.subarray(c,c+NB));brms[i]=r.rms;if(r.rms>bmax)bmax=r.rms;
+    if(r.f&&r.clar>0.75)bassF0[i]=r.f;
+    if(i%2000===1999){P(0.02+0.08*i/nFr,'Melacak nada bass…');await tick0();}
+  }
+  for(let i=0;i<nFr;i++)if(brms[i]<bmax*0.04)bassF0[i]=0;
+  // isi celah di awal/akhir nada (YIN telat beberapa frame saat nada baru dipetik)
+  {const o=Float32Array.from(bassF0);
+    for(let i=1;i<nFr;i++)if(o[i]&&!o[i-1])for(let k=1;k<=CP.SEP_EXT&&i-k>=0&&!o[i-k];k++)bassF0[i-k]=o[i];
+    for(let i=0;i<nFr-1;i++)if(o[i]&&!o[i+1])for(let k=1;k<=2&&i+k<nFr&&!o[i+k];k++)if(!bassF0[i+k])bassF0[i+k]=o[i];}
+  {const tmp=new Float32Array(5),w=new Float32Array(5),o=Float32Array.from(bassF0);
+    for(let i=2;i<nFr-2;i++){if(!o[i])continue;let n=0;for(let k=-2;k<=2;k++)if(o[i+k])w[n++]=o[i+k];if(n>=3)bassF0[i]=medianSmall(w,n,tmp);}}
+  // 2) jalur melodi utama (vokal/solo): salience harmonik + Viterbi pada sinyal tanpa bass
+  const leadF0=new Float32Array(nFr);
+  if(!opt.noLead){
+  P(0.1,'Melacak melodi utama…');
+  let src=x;
+  if(CP.SEP_2P){const pre=await separateDSP(x,sr,null,{noLead:true});src=new Float32Array(len);for(let i=0;i<len;i++)src[i]=x[i]-pre.drums[i]-pre.bass[i];}
+  const hp=new Float32Array(len);{const a=Math.exp(-2*Math.PI*CP.SEP_HP/sr);let y1=0,y2=0;for(let i=0;i<len;i++){y1=a*y1+(1-a)*src[i];y2=a*y2+(1-a)*y1;hp[i]=src[i]-y2;}}
+  const st=await salienceTrack(hp,sr,H,p=>P(0.1+0.3*p,'Melacak melodi utama…'));
+  for(let i=0;i<Math.min(nFr,st.path.length);i++){const s2=st.path[i];if(s2!==st.U){const f=st.BMIN*Math.pow(2,s2/60);if(f>=CP.SEP_LMIN&&st.sal[i][s2]>st.ref*CP.SEP_LV)leadF0[i]=f;}}
+  // hapus potongan melodi yang terlalu pendek
+  for(let i=0;i<nFr;){if(!leadF0[i]){i++;continue;}let j=i;while(j<nFr&&leadF0[j])j++;if(j-i<4)for(let k=i;k<j;k++)leadF0[k]=0;i=j;}
+  }
+  // 3) STFT per blok, topeng, sintesis ulang
+  const out={drums:new Float32Array(len),bass:new Float32Array(len),vocals:new Float32Array(len),other:new Float32Array(len)};
+  const win=new Float32Array(N);for(let i=0;i<N;i++)win[i]=0.5-0.5*Math.cos(2*Math.PI*i/N);
+  const F=getFFT(N),re=F.re,im=F.im,rev=F.rev;
+  const B=128,C=CP.SEP_TW>>1,FW=CP.SEP_FW;
+  const tmp=new Float32Array(32),col=new Float32Array(32),row=new Float32Array(K);
+  const harm=(mask,f0,hmax,fmaxHz,wfrac,wmin)=>{
+    for(let h=1;h<=hmax;h++){const fc=h*f0;if(fc>fmaxHz)break;const c=fc/binHz,wb=Math.max(wmin,wfrac*c),k0=Math.max(0,Math.floor(c-2.5*wb)),k1=Math.min(K-1,Math.ceil(c+2.5*wb));
+      for(let k=k0;k<=k1;k++){const d=Math.max(0,Math.abs(k-c)-0.5*wb)/wb,v=Math.exp(-0.5*d*d*4);if(v>mask[k])mask[k]=v;}}
+  };
+  const mB=new Float32Array(K),mL=new Float32Array(K);
+  const sy={drums:[new Float32Array(N),new Float32Array(N)],bass:[new Float32Array(N),new Float32Array(N)],vocals:[new Float32Array(N),new Float32Array(N)]};
+  const norm=1/1.5;
+  for(let b0=0;b0<nFr;b0+=B){
+    const f0=Math.max(0,b0-C),f1=Math.min(nFr,b0+B+C),nb=f1-f0;
+    const RE=new Float32Array(nb*K),IM=new Float32Array(nb*K),MG=new Float32Array(nb*K);
+    for(let fi=f0;fi<f1;fi++){
+      const c=fi*H-N/2;
+      for(let i=0;i<N;i++){const j=c+i,v=(j>=0&&j<len)?x[j]*win[i]:0;re[rev[i]]=v;im[rev[i]]=0;}
+      fftInPlace(F);
+      const o=(fi-f0)*K;for(let k=0;k<K;k++){RE[o+k]=re[k];IM[o+k]=im[k];MG[o+k]=Math.hypot(re[k],im[k]);}
+    }
+    const bEnd=Math.min(nFr,b0+B);
+    for(let fi=b0;fi<bEnd;fi++){
+      const o=(fi-f0)*K;
+      // median frekuensi (perkusif)
+      for(let k=0;k<K;k++){let n=0;for(let q=k-FW;q<=k+FW;q++){if(q>=0&&q<K)col[n++]=MG[o+q];}row[k]=medianSmall(col,n,tmp);}
+      mB.fill(0);mL.fill(0);
+      if(bassF0[fi])harm(mB,bassF0[fi],14,1800,CP.SEP_BW,CP.SEP_BWM);
+      for(let k=0;k*binHz<CP.SEP_SUB;k++)mB[k]=1;
+      if(leadF0[fi])harm(mL,leadF0[fi],40,sr/2,CP.SEP_LW,1.3);
+      for(let k=0;k<K;k++){
+        let n=0;for(let q=fi-C;q<=fi+C;q++){if(q>=f0&&q<f1)col[n++]=MG[(q-f0)*K+k];}
+        const Hm=medianSmall(col,n,tmp),Pm=row[k],h2=Hm*Hm,p2=Pm*Pm,mh=(h2+p2)>0?h2/(h2+p2):0.5;
+        let lb=mB[k],ll=mL[k];const s=lb+ll;if(s>1){lb/=s;ll/=s;}
+        const a=RE[o+k],bI=IM[o+k];
+        const md=1-mh,mbv=mh*lb,mlv=mh*ll;
+        sy.drums[0][k]=a*md;sy.drums[1][k]=bI*md;
+        sy.bass[0][k]=a*mbv;sy.bass[1][k]=bI*mbv;
+        sy.vocals[0][k]=a*mlv;sy.vocals[1][k]=bI*mlv;
+      }
+      const c=fi*H-N/2;
+      for(const name of['drums','bass','vocals']){
+        const [sr2,si2]=sy[name];
+        // iFFT via konjugasi
+        for(let i=0;i<N;i++){const k=i<=N/2?i:N-i,sg=i<=N/2?1:-1;re[rev[i]]=sr2[k];im[rev[i]]=-si2[k]*sg;}
+        fftInPlace(F);
+        const dst=out[name];
+        for(let i=0;i<N;i++){const j=c+i;if(j>=0&&j<len)dst[j]+=re[i]/N*win[i]*norm;}
+      }
+    }
+    P(0.4+0.58*bEnd/nFr,'Memisahkan instrumen…');await tick0();
+  }
+  for(let i=0;i<len;i++)out.other[i]=x[i]-out.drums[i]-out.bass[i]-out.vocals[i];
+  out.bassF0=bassF0;out.leadF0=leadF0;out.hop=H/sr;
+  P(1,'Selesai');
+  return out;
+}
+
+const AI_WORKER_SRC="/* Demucs v4 (htdemucs) via ONNX Runtime Web. Kode pemisah dari demucs-js oleh Kevin Gibbons (MIT). */\nlet ort=null,model=null;\n/**\n * Cooley-Tukey FFT algorithm\n */\nfunction fft(realInput, imagInput = null) {\n    const n = realInput.length;\n    // Check if power of 2\n    if ((n & (n - 1)) !== 0) {\n        throw new Error('FFT size must be power of 2');\n    }\n    const real = new Float32Array(realInput);\n    const imag = imagInput ? new Float32Array(imagInput) : new Float32Array(n);\n    // Bit-reversal permutation\n    let j = 0;\n    for (let i = 0; i < n - 1; i++) {\n        if (i < j) {\n            [real[i], real[j]] = [real[j], real[i]];\n            [imag[i], imag[j]] = [imag[j], imag[i]];\n        }\n        let k = n >> 1;\n        while (k <= j) {\n            j -= k;\n            k >>= 1;\n        }\n        j += k;\n    }\n    // Cooley-Tukey decimation-in-time\n    for (let len = 2; len <= n; len <<= 1) {\n        const halfLen = len >> 1;\n        const angle = (-2 * Math.PI) / len;\n        for (let i = 0; i < n; i += len) {\n            let wr = 1, wi = 0;\n            for (let j = 0; j < halfLen; j++) {\n                const k = i + j;\n                const l = k + halfLen;\n                const tr = wr * real[l] - wi * imag[l];\n                const ti = wr * imag[l] + wi * real[l];\n                real[l] = real[k] - tr;\n                imag[l] = imag[k] - ti;\n                real[k] += tr;\n                imag[k] += ti;\n                const wtemp = wr;\n                wr = wtemp * Math.cos(angle) - wi * Math.sin(angle);\n                wi = wtemp * Math.sin(angle) + wi * Math.cos(angle);\n            }\n        }\n    }\n    return { real, imag };\n}\n/**\n * Inverse FFT\n */\nfunction ifft(realInput, imagInput) {\n    const n = realInput.length;\n    // IFFT = conj(FFT(conj(x))) / n\n    // Conjugate input\n    const imagConj = new Float32Array(n);\n    for (let i = 0; i < n; i++) {\n        imagConj[i] = -imagInput[i];\n    }\n    // Forward FFT\n    const result = fft(realInput, imagConj);\n    // Conjugate and normalize output\n    for (let i = 0; i < n; i++) {\n        result.real[i] /= n;\n        result.imag[i] = -result.imag[i] / n;\n    }\n    return result;\n}\nfunction hannWindow(n) {\n    const window = new Float32Array(n);\n    for (let i = 0; i < n; i++) {\n        window[i] = 0.5 * (1 - Math.cos((2 * Math.PI * i) / n));\n    }\n    return window;\n}\n/**\n * Pad array with reflect mode\n * Matches PyTorch's F.pad with mode='reflect'\n */\nfunction padReflect(arr, padLeft, padRight) {\n    const length = arr.length;\n    const newLength = length + padLeft + padRight;\n    const result = new Float32Array(newLength);\n    // Copy original data\n    for (let i = 0; i < length; i++) {\n        result[padLeft + i] = arr[i];\n    }\n    // Reflect left\n    for (let i = 0; i < padLeft; i++) {\n        const srcIdx = padLeft - i;\n        result[i] = result[srcIdx];\n    }\n    // Reflect right\n    for (let i = 0; i < padRight; i++) {\n        const dstIdx = padLeft + length + i;\n        const srcIdx = padLeft + length - 2 - i;\n        result[dstIdx] = result[srcIdx];\n    }\n    return result;\n}\n/**\n * Pad1d - matches Python's pad1d function\n */\nfunction pad1d(x, paddings, mode = 'constant') {\n    const length = x.shape[x.shape.length - 1];\n    const [paddingLeft, paddingRight] = paddings;\n    let xData = x.data;\n    let xShape = x.shape;\n    let actualPaddingLeft = paddingLeft;\n    let actualPaddingRight = paddingRight;\n    // Handle reflect mode with small input\n    if (mode === 'reflect') {\n        const maxPad = Math.max(paddingLeft, paddingRight);\n        if (length <= maxPad) {\n            const extraPad = maxPad - length + 1;\n            const extraPadRight = Math.min(paddingRight, extraPad);\n            const extraPadLeft = extraPad - extraPadRight;\n            // First pad with zeros\n            const shape = [...xShape];\n            shape[shape.length - 1] = length + extraPadLeft + extraPadRight;\n            const totalSize = shape.reduce((a, b) => a * b, 1);\n            const tempData = new Float32Array(totalSize);\n            const outerSize = totalSize / shape[shape.length - 1];\n            const newLength = shape[shape.length - 1];\n            for (let i = 0; i < outerSize; i++) {\n                for (let j = 0; j < length; j++) {\n                    tempData[i * newLength + extraPadLeft + j] = xData[i * length + j];\n                }\n            }\n            xData = tempData;\n            xShape = shape;\n            actualPaddingLeft = paddingLeft - extraPadLeft;\n            actualPaddingRight = paddingRight - extraPadRight;\n        }\n    }\n    const currentLength = xShape[xShape.length - 1];\n    const shape = [...xShape];\n    shape[shape.length - 1] = currentLength + actualPaddingLeft + actualPaddingRight;\n    const totalSize = shape.reduce((a, b) => a * b, 1);\n    const out = new Float32Array(totalSize);\n    const outerSize = totalSize / shape[shape.length - 1];\n    const outputLength = shape[shape.length - 1];\n    for (let i = 0; i < outerSize; i++) {\n        const srcOffset = i * currentLength;\n        const dstOffset = i * outputLength;\n        if (mode === 'constant') {\n            // Copy data with zero padding\n            for (let j = 0; j < currentLength; j++) {\n                out[dstOffset + actualPaddingLeft + j] = xData[srcOffset + j];\n            }\n        }\n        else if (mode === 'reflect') {\n            // Extract slice for this outer dimension\n            const slice = xData.slice(srcOffset, srcOffset + currentLength);\n            const padded = padReflect(slice, actualPaddingLeft, actualPaddingRight);\n            for (let j = 0; j < outputLength; j++) {\n                out[dstOffset + j] = padded[j];\n            }\n        }\n    }\n    return { data: out, shape: shape };\n}\n/**\n * STFT - Short-Time Fourier Transform\n * Matches PyTorch's torch.stft behavior\n */\nfunction stft(x, nFft, hopLength, window, normalized = true, center = true, padMode = 'reflect') {\n    // x is {data, shape} where shape is [batch, length]\n    const [batch, length] = x.shape;\n    let inputData = x.data;\n    let inputLength = length;\n    // Center padding\n    if (center) {\n        const pad = Math.floor(nFft / 2);\n        const padded = pad1d(x, [pad, pad], padMode);\n        inputData = padded.data;\n        inputLength = padded.shape[padded.shape.length - 1];\n    }\n    // Calculate number of frames\n    const numFrames = Math.floor((inputLength - nFft) / hopLength) + 1;\n    const numFreqs = Math.floor(nFft / 2) + 1;\n    // Output: [batch, freqs, frames] complex\n    const realOut = new Float32Array(batch * numFreqs * numFrames);\n    const imagOut = new Float32Array(batch * numFreqs * numFrames);\n    // Normalization factor\n    const norm = normalized ? 1.0 / Math.sqrt(nFft) : 1.0;\n    for (let b = 0; b < batch; b++) {\n        for (let frame = 0; frame < numFrames; frame++) {\n            const frameStart = frame * hopLength;\n            // Apply window and prepare for FFT\n            const frameData = new Float32Array(nFft);\n            for (let i = 0; i < nFft; i++) {\n                const idx = b * inputLength + frameStart + i;\n                frameData[i] = inputData[idx] * window[i] * norm;\n            }\n            // Compute FFT\n            const { real, imag } = fft(frameData);\n            // Store only positive frequencies (up to Nyquist)\n            for (let freq = 0; freq < numFreqs; freq++) {\n                const outIdx = b * numFreqs * numFrames + freq * numFrames + frame;\n                realOut[outIdx] = real[freq];\n                imagOut[outIdx] = imag[freq];\n            }\n        }\n    }\n    return {\n        real: { data: realOut, shape: [batch, numFreqs, numFrames] },\n        imag: { data: imagOut, shape: [batch, numFreqs, numFrames] },\n    };\n}\nfunction spectro(x, nFft = 512, hopLength = null) {\n    if (hopLength === null) {\n        hopLength = Math.floor(nFft / 4);\n    }\n    // x has shape [..., length]\n    const originalShape = x.shape;\n    const length = originalShape[originalShape.length - 1];\n    // Reshape to [batch, length]\n    const otherSize = x.data.length / length;\n    const reshapedX = {\n        data: x.data,\n        shape: [otherSize, length],\n    };\n    const window = hannWindow(nFft);\n    const result = stft(reshapedX, nFft, hopLength, window, true, true, 'reflect');\n    // Reshape back to [..., freqs, frames]\n    const [batch, freqs, frames] = result.real.shape;\n    const outputShape = [...originalShape.slice(0, -1), freqs, frames];\n    return {\n        real: { data: result.real.data, shape: outputShape },\n        imag: { data: result.imag.data, shape: outputShape },\n    };\n}\nfunction spec(x) {\n    const hl = 1024;\n    // le = ceil(x.shape[-1] / hl)\n    const lastDimLength = x.shape[x.shape.length - 1];\n    const le = Math.ceil(lastDimLength / hl);\n    // pad = hl // 2 * 3\n    const pad = Math.floor(hl / 2) * 3;\n    // Pad input\n    const paddingRight = pad + le * hl - lastDimLength;\n    const paddedX = pad1d(x, [pad, paddingRight], 'reflect');\n    // Compute spectrogram\n    const z = spectro(paddedX, 4096, hl);\n    // z[..., :-1, :] - remove last frequency bin\n    const zShape = z.real.shape;\n    const newFreqs = zShape[zShape.length - 2] - 1;\n    const frames = zShape[zShape.length - 1];\n    const outerSize = z.real.data.length / (zShape[zShape.length - 2] * frames);\n    const newShape = [...zShape];\n    newShape[newShape.length - 2] = newFreqs;\n    const newSize = newShape.reduce((a, b) => a * b, 1);\n    const newReal = new Float32Array(newSize);\n    const newImag = new Float32Array(newSize);\n    for (let i = 0; i < outerSize; i++) {\n        for (let freq = 0; freq < newFreqs; freq++) {\n            for (let frame = 0; frame < frames; frame++) {\n                const oldIdx = i * zShape[zShape.length - 2] * frames + freq * frames + frame;\n                const newIdx = i * newFreqs * frames + freq * frames + frame;\n                newReal[newIdx] = z.real.data[oldIdx];\n                newImag[newIdx] = z.imag.data[oldIdx];\n            }\n        }\n    }\n    // z[..., 2:2+le] - slice frames\n    const slicedShape = [...newShape];\n    slicedShape[slicedShape.length - 1] = le;\n    const slicedSize = slicedShape.reduce((a, b) => a * b, 1);\n    const slicedReal = new Float32Array(slicedSize);\n    const slicedImag = new Float32Array(slicedSize);\n    for (let i = 0; i < outerSize; i++) {\n        for (let freq = 0; freq < newFreqs; freq++) {\n            for (let frame = 0; frame < le; frame++) {\n                const srcIdx = i * newFreqs * frames + freq * frames + (2 + frame);\n                const dstIdx = i * newFreqs * le + freq * le + frame;\n                slicedReal[dstIdx] = newReal[srcIdx];\n                slicedImag[dstIdx] = newImag[srcIdx];\n            }\n        }\n    }\n    return {\n        real: { data: slicedReal, shape: slicedShape },\n        imag: { data: slicedImag, shape: slicedShape },\n    };\n}\nfunction magnitude(z) {\n    // z is complex with shape [B, C, Fr, T]\n    const [B, C, Fr, T] = z.real.shape;\n    // view_as_real adds a dimension of size 2 at the end: [B, C, Fr, T, 2]\n    // permute(0, 1, 4, 2, 3) -> [B, C, 2, Fr, T]\n    // reshape to [B, C*2, Fr, T]\n    const outShape = [B, C * 2, Fr, T];\n    const outSize = B * C * 2 * Fr * T;\n    const out = new Float32Array(outSize);\n    for (let b = 0; b < B; b++) {\n        for (let c = 0; c < C; c++) {\n            for (let fr = 0; fr < Fr; fr++) {\n                for (let t = 0; t < T; t++) {\n                    const srcIdx = b * C * Fr * T + c * Fr * T + fr * T + t;\n                    // Real part goes to channel c*2\n                    const dstIdxReal = b * (C * 2) * Fr * T + c * 2 * Fr * T + fr * T + t;\n                    out[dstIdxReal] = z.real.data[srcIdx];\n                    // Imag part goes to channel c*2+1\n                    const dstIdxImag = b * (C * 2) * Fr * T + (c * 2 + 1) * Fr * T + fr * T + t;\n                    out[dstIdxImag] = z.imag.data[srcIdx];\n                }\n            }\n        }\n    }\n    return { data: out, shape: outShape };\n}\n/**\n * ISTFT - Inverse Short-Time Fourier Transform\n * Matches PyTorch's torch.istft behavior\n */\nfunction istft(z, nFft, hopLength, window, normalized = true, length = null, center = true) {\n    // z is complex with shape [batch, freqs, frames]\n    const [batch, freqs, numFrames] = z.real.shape;\n    if (2 * freqs - 2 !== nFft) {\n        throw new Error(`Expected freqs = nFft/2 + 1, got freqs=${freqs}, nFft=${nFft}`);\n    }\n    // Calculate output length\n    let outputLength;\n    if (length !== null) {\n        outputLength = length;\n    }\n    else {\n        outputLength = nFft + (numFrames - 1) * hopLength;\n    }\n    // Account for center padding\n    if (center) {\n        outputLength -= nFft;\n    }\n    // Initialize output\n    const output = new Float32Array(batch * outputLength);\n    const windowSum = new Float32Array(batch * outputLength);\n    // Normalization factor\n    const norm = normalized ? Math.sqrt(nFft) : 1.0;\n    for (let b = 0; b < batch; b++) {\n        for (let frame = 0; frame < numFrames; frame++) {\n            // Reconstruct full FFT spectrum (including negative frequencies)\n            const fullReal = new Float32Array(nFft);\n            const fullImag = new Float32Array(nFft);\n            // Positive frequencies (0 to Nyquist)\n            for (let freq = 0; freq < freqs; freq++) {\n                const idx = b * freqs * numFrames + freq * numFrames + frame;\n                fullReal[freq] = z.real.data[idx];\n                fullImag[freq] = z.imag.data[idx];\n            }\n            // Negative frequencies (conjugate symmetry)\n            for (let freq = freqs; freq < nFft; freq++) {\n                const mirrorFreq = nFft - freq;\n                fullReal[freq] = fullReal[mirrorFreq];\n                fullImag[freq] = -fullImag[mirrorFreq];\n            }\n            // Inverse FFT\n            const frameData = ifft(fullReal, fullImag);\n            // Apply window and overlap-add\n            const frameStart = frame * hopLength - (center ? nFft / 2 : 0);\n            for (let i = 0; i < nFft; i++) {\n                const outputIdx = frameStart + i;\n                if (outputIdx >= 0 && outputIdx < outputLength) {\n                    const globalIdx = b * outputLength + outputIdx;\n                    output[globalIdx] += frameData.real[i] * window[i] * norm;\n                    windowSum[globalIdx] += window[i] * window[i];\n                }\n            }\n        }\n    }\n    // Normalize by window sum\n    for (let i = 0; i < output.length; i++) {\n        if (windowSum[i] > 1e-8) {\n            output[i] /= windowSum[i];\n        }\n    }\n    return {\n        data: output,\n        shape: [batch, outputLength],\n    };\n}\nfunction ispectro(z, hopLength = null, length = null) {\n    // z has shape [..., freqs, frames] with real and imag\n    const originalShape = z.real.shape;\n    const freqs = originalShape[originalShape.length - 2];\n    const frames = originalShape[originalShape.length - 1];\n    const nFft = 2 * freqs - 2;\n    if (hopLength === null) {\n        hopLength = Math.floor(nFft / 4);\n    }\n    // Reshape to [batch, freqs, frames]\n    const otherSize = z.real.data.length / (freqs * frames);\n    const reshapedZ = {\n        real: { data: z.real.data, shape: [otherSize, freqs, frames] },\n        imag: { data: z.imag.data, shape: [otherSize, freqs, frames] },\n    };\n    const window = hannWindow(nFft);\n    const result = istft(reshapedZ, nFft, hopLength, window, true, length, true);\n    // Reshape back to [..., length]\n    const outputLength = result.shape[1];\n    const outputShape = [...originalShape.slice(0, -2), outputLength];\n    return {\n        data: result.data,\n        shape: outputShape,\n    };\n}\n/**\n * Pad complex tensor on frequency or time dimensions\n */\nfunction padComplex(z, padFreq, padTime) {\n    const shape = z.real.shape;\n    const ndim = shape.length;\n    // padFreq is [left, right] for second-to-last dimension\n    // padTime is [left, right] for last dimension\n    const [padFreqLeft, padFreqRight] = padFreq;\n    const [padTimeLeft, padTimeRight] = padTime;\n    const oldFreqs = shape[ndim - 2];\n    const oldFrames = shape[ndim - 1];\n    const newFreqs = oldFreqs + padFreqLeft + padFreqRight;\n    const newFrames = oldFrames + padTimeLeft + padTimeRight;\n    const newShape = [...shape];\n    newShape[ndim - 2] = newFreqs;\n    newShape[ndim - 1] = newFrames;\n    const totalSize = newShape.reduce((a, b) => a * b, 1);\n    const newReal = new Float32Array(totalSize);\n    const newImag = new Float32Array(totalSize);\n    const outerSize = totalSize / (newFreqs * newFrames);\n    for (let i = 0; i < outerSize; i++) {\n        for (let freq = 0; freq < oldFreqs; freq++) {\n            for (let frame = 0; frame < oldFrames; frame++) {\n                const oldIdx = i * oldFreqs * oldFrames + freq * oldFrames + frame;\n                const newIdx = i * newFreqs * newFrames + (freq + padFreqLeft) * newFrames + (frame + padTimeLeft);\n                newReal[newIdx] = z.real.data[oldIdx];\n                newImag[newIdx] = z.imag.data[oldIdx];\n            }\n        }\n    }\n    return {\n        real: { data: newReal, shape: newShape },\n        imag: { data: newImag, shape: newShape },\n    };\n}\nfunction ispec(z, length) {\n    const hl = 1024;\n    // z = F.pad(z, (0, 0, 0, 1)) - pad frequency dimension by 1 on the right\n    let paddedZ = padComplex(z, [0, 1], [0, 0]);\n    // z = F.pad(z, (2, 2)) - pad time dimension by 2 on each side\n    paddedZ = padComplex(paddedZ, [0, 0], [2, 2]);\n    // Compute parameters\n    const pad = Math.floor(hl / 2) * 3;\n    const le = hl * Math.ceil(length / hl) + 2 * pad;\n    // Inverse spectrogram\n    const x = ispectro(paddedZ, hl, le);\n    // Crop to desired length: x[..., pad: pad + length]\n    const shape = x.shape;\n    const lastDim = shape.length - 1;\n    const totalLength = shape[lastDim];\n    const newShape = [...shape];\n    newShape[lastDim] = length;\n    const totalSize = newShape.reduce((a, b) => a * b, 1);\n    const newData = new Float32Array(totalSize);\n    const outerSize = totalSize / length;\n    for (let i = 0; i < outerSize; i++) {\n        for (let j = 0; j < length; j++) {\n            const oldIdx = i * totalLength + pad + j;\n            const newIdx = i * length + j;\n            newData[newIdx] = x.data[oldIdx];\n        }\n    }\n    return { data: newData, shape: newShape };\n}\n\nfunction planarize(channelData) {\n    const channels = channelData.length;\n    const samples = channelData[0].length;\n    if (channels === 1) {\n        return channelData[0];\n    }\n    else {\n        let isSequential = true;\n        for (let c = 1; c < channels; c++) {\n            if (channelData[c].buffer !== channelData[0].buffer ||\n                channelData[c].byteOffset !== channelData[c - 1].byteOffset + channelData[c - 1].length * 4) {\n                isSequential = false;\n                break;\n            }\n        }\n        if (isSequential) {\n            // Channels are sequential views of the same buffer, create a single view\n            return new Float32Array(channelData[0].buffer, channelData[0].byteOffset, channels * samples);\n        }\n        else {\n            // Channels are separate buffers, concatenate them\n            let data = new Float32Array(channels * samples);\n            for (let c = 0; c < channels; c++) {\n                data.set(channelData[c], c * samples);\n            }\n            return data;\n        }\n    }\n}\n\nclass TensorChunk {\n    tensor;\n    offset;\n    length;\n    constructor(tensor, offset = 0, length = null) {\n        const totalLength = tensor.shape[tensor.shape.length - 1];\n        if (offset < 0)\n            throw new Error('offset must be >= 0');\n        if (offset >= totalLength)\n            throw new Error('offset must be < totalLength');\n        if (length === null) {\n            length = totalLength - offset;\n        }\n        else {\n            length = Math.min(totalLength - offset, length);\n        }\n        this.tensor = tensor;\n        this.offset = offset;\n        this.length = length;\n    }\n    padded(targetLength) {\n        const delta = targetLength - this.length;\n        const totalLength = this.tensor.shape[this.tensor.shape.length - 1];\n        if (delta < 0)\n            throw new Error('targetLength must be >= length');\n        const start = this.offset - Math.floor(delta / 2);\n        const end = start + targetLength;\n        const correctStart = Math.max(0, start);\n        const correctEnd = Math.min(totalLength, end);\n        const padLeft = correctStart - start;\n        const padRight = end - correctEnd;\n        // Slice tensor from correctStart to correctEnd on last dimension\n        // Then pad with zeros on left and right\n        const shape = [...this.tensor.shape];\n        const lastDim = shape.length - 1;\n        shape[lastDim] = targetLength;\n        // Calculate total size\n        const totalSize = shape.reduce((a, b) => a * b, 1);\n        const out = new Float32Array(totalSize);\n        // Copy sliced data with padding\n        // For multi-dimensional tensors, we need to handle each slice along the last dimension\n        const sliceLength = correctEnd - correctStart;\n        const innerSize = shape[lastDim]; // target length with padding\n        const outerSize = totalSize / innerSize;\n        for (let i = 0; i < outerSize; i++) {\n            const srcOffset = i * totalLength + correctStart;\n            const dstOffset = i * innerSize + padLeft;\n            // Copy the valid slice\n            for (let j = 0; j < sliceLength; j++) {\n                out[dstOffset + j] = this.tensor.data[srcOffset + j];\n            }\n            // padLeft and padRight are already zeros (Float32Array is zero-initialized)\n        }\n        if (out.length !== totalSize) {\n            throw new Error(`Output size mismatch: ${out.length} !== ${totalSize}`);\n        }\n        return {\n            data: out,\n            shape: shape,\n        };\n    }\n}\n/**\n * Pad to training length\n * Matches Python's F.pad(x, (0, training_length - x.shape[-1]))\n */\nfunction padToTrainingLength(mix, trainingLength) {\n    const currentLength = mix.shape[mix.shape.length - 1];\n    if (currentLength >= trainingLength) {\n        // No padding needed\n        return mix;\n    }\n    const shape = [...mix.shape];\n    shape[shape.length - 1] = trainingLength;\n    const totalSize = shape.reduce((a, b) => a * b, 1);\n    const out = new Float32Array(totalSize);\n    // Copy existing data, zeros are already in place (Float32Array is zero-initialized)\n    const outerSize = totalSize / trainingLength;\n    for (let i = 0; i < outerSize; i++) {\n        const srcOffset = i * currentLength;\n        const dstOffset = i * trainingLength;\n        for (let j = 0; j < currentLength; j++) {\n            out[dstOffset + j] = mix.data[srcOffset + j];\n        }\n        // Remaining positions are already zero-padded\n    }\n    return { data: out, shape: shape };\n}\nfunction mask(m) {\n    const [B, S, C, Fr, T] = m.shape;\n    // C should be even (contains real and imag interleaved)\n    const C_half = C / 2;\n    // Output shape: [B, S, C//2, Fr, T] with real and imag\n    const outShape = [B, S, C_half, Fr, T];\n    const outSize = outShape.reduce((a, b) => a * b, 1);\n    const realOut = new Float32Array(outSize);\n    const imagOut = new Float32Array(outSize);\n    // The input m has shape [B, S, C, Fr, T] where channels are [real0, imag0, real1, imag1, ...]\n    // We need to convert to complex with shape [B, S, C//2, Fr, T]\n    for (let b = 0; b < B; b++) {\n        for (let s = 0; s < S; s++) {\n            for (let c = 0; c < C_half; c++) {\n                for (let fr = 0; fr < Fr; fr++) {\n                    for (let t = 0; t < T; t++) {\n                        // Input indices for real and imag channels\n                        const realChannel = c * 2;\n                        const imagChannel = c * 2 + 1;\n                        const realInIdx = b * S * C * Fr * T + s * C * Fr * T + realChannel * Fr * T + fr * T + t;\n                        const imagInIdx = b * S * C * Fr * T + s * C * Fr * T + imagChannel * Fr * T + fr * T + t;\n                        // Output index\n                        const outIdx = b * S * C_half * Fr * T + s * C_half * Fr * T + c * Fr * T + fr * T + t;\n                        realOut[outIdx] = m.data[realInIdx];\n                        imagOut[outIdx] = m.data[imagInIdx];\n                    }\n                }\n            }\n        }\n    }\n    return {\n        real: { data: realOut, shape: outShape },\n        imag: { data: imagOut, shape: outShape },\n    };\n}\nfunction addTensors(a, b) {\n    // Verify shapes match\n    if (a.shape.length !== b.shape.length || !a.shape.every((dim, i) => dim === b.shape[i])) {\n        throw new Error('Tensor shapes must match for addition');\n    }\n    const out = new Float32Array(a.data.length);\n    for (let i = 0; i < a.data.length; i++) {\n        out[i] = a.data[i] + b.data[i];\n    }\n    return { data: out, shape: [...a.shape] };\n}\nfunction cropToValidLength(x, validLength) {\n    const shape = x.shape;\n    const currentLength = shape[shape.length - 1];\n    if (validLength >= currentLength) {\n        // No cropping needed\n        return x;\n    }\n    const newShape = [...shape];\n    newShape[newShape.length - 1] = validLength;\n    const totalSize = newShape.reduce((a, b) => a * b, 1);\n    const out = new Float32Array(totalSize);\n    const outerSize = totalSize / validLength;\n    for (let i = 0; i < outerSize; i++) {\n        for (let j = 0; j < validLength; j++) {\n            const srcIdx = i * currentLength + j;\n            const dstIdx = i * validLength + j;\n            out[dstIdx] = x.data[srcIdx];\n        }\n    }\n    return { data: out, shape: newShape };\n}\nfunction centerTrim(tensor, reference) {\n    const tensorLength = tensor.shape[tensor.shape.length - 1];\n    const refSize = reference; // reference is a number\n    const delta = tensorLength - refSize;\n    if (delta < 0) {\n        throw new Error(`tensor must be larger than reference. Delta is ${delta}.`);\n    }\n    if (delta === 0) {\n        // No trimming needed\n        return tensor;\n    }\n    // Calculate trim indices\n    const start = Math.floor(delta / 2);\n    const end = tensorLength - (delta - Math.floor(delta / 2));\n    const shape = [...tensor.shape];\n    const newLength = end - start;\n    shape[shape.length - 1] = newLength;\n    const totalSize = shape.reduce((a, b) => a * b, 1);\n    const out = new Float32Array(totalSize);\n    const outerSize = totalSize / newLength;\n    for (let i = 0; i < outerSize; i++) {\n        for (let j = 0; j < newLength; j++) {\n            const srcIdx = i * tensorLength + start + j;\n            const dstIdx = i * newLength + j;\n            out[dstIdx] = tensor.data[srcIdx];\n        }\n    }\n    return { data: out, shape: shape };\n}\nasync function applyInference(model, mix) {\n    const length = mix.length;\n    const validLength = model.validLength(length);\n    const paddedMix = mix.padded(validLength);\n    const trainingLength = Math.floor(model.segment * model.samplerate);\n    // Pad to training length\n    const paddedPaddedMix = padToTrainingLength(paddedMix, trainingLength);\n    // Compute spectrogram\n    const z = spec(paddedPaddedMix);\n    // Compute magnitude spectrogram\n    const magspec = magnitude(z);\n    // Run model forward\n    const { outX, outXt } = await model.forward(paddedMix, magspec);\n    // Convert mask to complex\n    const zout = mask(outX);\n    // Inverse spectrogram\n    const timeFromSpec = ispec(zout, trainingLength);\n    // Add time and frequency branches\n    const sumBeforeCrop = addTensors(outXt, timeFromSpec);\n    // Crop to valid length\n    const out = cropToValidLength(sumBeforeCrop, validLength);\n    // Center trim to original chunk length\n    return centerTrim(out, length);\n}\n/**\n * Split input into segments and apply model to each segment\n */\nasync function applySplits(model, mix, progressCallback, overlap = 0.25) {\n    const [batch, channels, length] = mix.shape;\n    // Initialize output arrays\n    const sources = model.sources.length;\n    const outData = new Float32Array(batch * sources * channels * length);\n    const sumWeight = new Float32Array(length);\n    const segment = Math.floor(model.samplerate * model.segment);\n    const stride = Math.floor((1 - overlap) * segment);\n    // Create triangle-shaped weight for smooth transitions\n    const weight = new Float32Array(segment);\n    for (let i = 0; i < Math.floor(segment / 2) + 1; i++) {\n        weight[i] = i + 1;\n    }\n    for (let i = Math.floor(segment / 2) + 1; i < segment; i++) {\n        weight[i] = segment - i;\n    }\n    const maxWeight = weight.reduce((max, current) => Math.max(max, current), -Infinity);\n    for (let i = 0; i < segment; i++) {\n        weight[i] /= maxWeight;\n    }\n    const total = Math.ceil(length / stride);\n    progressCallback?.(0, total);\n    // Process each chunk\n    let offset = 0;\n    let chunkIndex = 0;\n    while (offset < length) {\n        const chunk = new TensorChunk(mix, offset, segment);\n        const chunkOut = await applyInference(model, chunk);\n        const chunkLength = chunkOut.shape[chunkOut.shape.length - 1];\n        // Add weighted chunk to output\n        for (let b = 0; b < batch; b++) {\n            for (let s = 0; s < sources; s++) {\n                for (let c = 0; c < channels; c++) {\n                    for (let t = 0; t < chunkLength; t++) {\n                        const outIdx = b * sources * channels * length + s * channels * length + c * length + offset + t;\n                        const chunkIdx = b * sources * channels * chunkLength + s * channels * chunkLength + c * chunkLength + t;\n                        { const v = chunkOut.data[chunkIdx]; if (v === v) outData[outIdx] += weight[t] * v; } // NaN di tepi potongan diabaikan\n                    }\n                }\n            }\n        }\n        // Add weights\n        for (let t = 0; t < chunkLength; t++) {\n            sumWeight[offset + t] += weight[t];\n        }\n        offset += stride;\n        chunkIndex++;\n        progressCallback?.(chunkIndex, total);\n    }\n    // Normalize by sum of weights\n    for (let i = 0; i < outData.length; i++) {\n        const timeIdx = i % length;\n        outData[i] /= sumWeight[timeIdx];\n    }\n    return {\n        data: outData,\n        shape: [batch, sources, channels, length],\n    };\n}\nasync function applyModel(model, mix, progressCallback, overlap = 0.25) {\n    // TODO: implement random shifts\n    return await applySplits(model, mix, progressCallback, overlap);\n}\nasync function separateTracks(model, rawAudio, progressCallback, overlap = 0.25) {\n    const { channelData, sampleRate } = rawAudio;\n    const channels = channelData.length;\n    const samples = channelData[0].length;\n    const data = planarize(rawAudio.channelData);\n    const mix = {\n        data,\n        shape: [1, channels, samples],\n    };\n    const result = await applyModel(model, mix, progressCallback, overlap);\n    const [batch, sources, resultChannels, length] = result.shape;\n    // Extract each source\n    const tracks = {};\n    for (let s = 0; s < sources; s++) {\n        const sourceName = model.sources[s];\n        const channelData = [];\n        for (let c = 0; c < channels; c++) {\n            const startIdx = s * channels * length + c * length;\n            const channelArray = new Float32Array(result.data.buffer, startIdx * 4, // byte offset (Float32 = 4 bytes)\n            length);\n            channelData.push(channelArray);\n        }\n        tracks[sourceName] = { channelData, sampleRate };\n    }\n    return tracks;\n}\n\nclass HTDemucs{\n  constructor(s){this.session=s;this.sources=['drums','bass','other','vocals'];this.audioChannels=2;this.samplerate=44100;this.segment=7.8;this.inputNames=s.inputNames;this.outputNames=s.outputNames;}\n  validLength(l){const t=Math.floor(this.segment*this.samplerate);if(t<l)throw new Error('too long');return t;}\n  async forward(mix,mag){const f={};f[this.inputNames[0]]=new ort.Tensor('float32',mix.data,mix.shape);f[this.inputNames[1]]=new ort.Tensor('float32',mag.data,mag.shape);\n    const r=await this.session.run(f);const a=r[this.outputNames[0]],b=r[this.outputNames[1]];return{outX:{data:a.data,shape:a.dims},outXt:{data:b.data,shape:b.dims}};}\n}\nasync function loadWeights(url,post){\n  let cache=null;try{cache=await caches.open('ngulik-demucs-v1');const hit=await cache.match(url);if(hit){post({type:'progress',phase:'load',p:1});return await hit.arrayBuffer();}}catch(e){cache=null;}\n  const res=await fetch(url);if(!res.ok)throw new Error('Model tidak bisa diunduh ('+res.status+')');\n  const total=+res.headers.get('content-length')||0;\n  let buf;\n  if(res.body&&res.body.getReader&&total){\n    const rd=res.body.getReader();buf=new Uint8Array(total);let got=0;\n    for(;;){const {done,value}=await rd.read();if(done)break;if(got+value.length>buf.length){const nb=new Uint8Array(Math.max(buf.length*2,got+value.length));nb.set(buf);buf=nb;}buf.set(value,got);got+=value.length;post({type:'progress',phase:'download',p:got/total,mb:got/1048576});}\n    buf=buf.subarray(0,got).slice().buffer;\n  }else buf=await res.arrayBuffer();\n  try{if(cache)await cache.put(url,new Response(buf));}catch(e){}\n  return buf;\n}\nasync function handle(msg,post){\n  if(msg.type==='init'){\n    if(!ort){ if(msg.ortUrl&&typeof importScripts==='function')importScripts(msg.ortUrl); ort=self.ort; }\n    if(msg.wasmBase)ort.env.wasm.wasmPaths=msg.wasmBase;\n    ort.env.wasm.numThreads=(self.crossOriginIsolated&&navigator.hardwareConcurrency)?Math.min(4,navigator.hardwareConcurrency):1;\n    const w=await loadWeights(msg.modelUrl,post);\n    post({type:'progress',phase:'init',p:0});\n    const hasGPU=typeof navigator!=='undefined'&&!!navigator.gpu&&!msg.noGPU;\n    let s=null,ep='wasm';\n    if(hasGPU){try{s=await ort.InferenceSession.create(w,{executionProviders:['webgpu']});ep='webgpu';}catch(e){s=null;}}\n    if(!s)s=await ort.InferenceSession.create(w,{executionProviders:['wasm']});\n    model=new HTDemucs(s);post({type:'ready',ep});return;\n  }\n  if(msg.type==='sep'){\n    const tr=await separateTracks(model,{channelData:[msg.ch0,msg.ch1],sampleRate:44100},(a,b)=>post({type:'progress',phase:'sep',id:msg.id,p:a/b}),msg.overlap||0.25);\n    const out={},tf=[];\n    for(const k of ['drums','bass','other','vocals']){\n      const c=tr[k].channelData,n=c[0].length,h=Math.floor(n/2),m=new Float32Array(h);\n      for(let i=0;i<h;i++){let v=0;for(let q=-1;q<=2;q++){const j=2*i+q;if(j>=0&&j<n){const a=c[0][j]+c[1][j];v+=(q===0||q===1?0.3:0.2)*(a===a?a:0);}}m[i]=v*0.5;}\n      out[k]=m;tf.push(m.buffer);\n    }\n    post({type:'done',id:msg.id,stems:out},tf);return;\n  }\n}\nif(typeof self!=='undefined'&&typeof importScripts==='function'){\n  self.onmessage=e=>{handle(e.data,(m,t)=>self.postMessage(m,t||[])).catch(err=>self.postMessage({type:'error',id:e.data.id,message:String(err&&err.message||err)}));};\n}\n";
+/* ---------- pemisah AI (Demucs v4) di pekerja latar ---------- */
+const AI_MODEL_URL='https://bakkot.github.io/demucs-js/htdemucs.onnx';
+const ORT_BASE='https://cdn.jsdelivr.net/npm/onnxruntime-web@1.23.0/dist/';
+const AI={w:null,ready:null,ep:null,seq:0,pending:{},onProgress:null,factory:null};
+function aiWorker(){
+  if(AI.w)return AI.w;
+  if(AI.factory)AI.w=AI.factory();
+  else{const blob=new Blob([AI_WORKER_SRC],{type:'text/javascript'});AI.w=new Worker(URL.createObjectURL(blob));}
+  AI.w.onmessage=e=>{
+    const m=e.data;
+    if(m.type==='progress'){AI.onProgress&&AI.onProgress(m);return;}
+    const key=m.type==='ready'?'init':m.id;const p=AI.pending[key];
+    if(m.type==='error'){const q=AI.pending[m.id]||AI.pending.init;if(q){delete AI.pending[m.id];delete AI.pending.init;q.rej(new Error(m.message));}return;}
+    if(p){delete AI.pending[key];p.res(m);}
+  };
+  AI.w.onerror=e=>{for(const k in AI.pending){AI.pending[k].rej(new Error(e.message||'Pekerja AI gagal'));delete AI.pending[k];}};
+  return AI.w;
+}
+function aiInit(){
+  if(AI.ready)return AI.ready;
+  AI.ready=new Promise((res,rej)=>{AI.pending.init={res,rej};
+    aiWorker().postMessage({type:'init',modelUrl:AI_MODEL_URL,ortUrl:ORT_BASE+'ort.min.js',wasmBase:ORT_BASE});
+  }).then(m=>{AI.ep=m.ep;return m;}).catch(e=>{AI.ready=null;try{AI.w&&AI.w.terminate&&AI.w.terminate();}catch(_){}AI.w=null;throw e;});
+  return AI.ready;
+}
+function aiSep(ch0,ch1){
+  const id=++AI.seq;
+  return new Promise((res,rej)=>{AI.pending[id]={res,rej};aiWorker().postMessage({type:'sep',id,ch0,ch1},[ch0.buffer,ch1.buffer]);});
+}
+// ch0/ch1: Float32 di 44100 Hz. Hasil: stem mono 22050 Hz {drums,bass,other,vocals}
+async function separateAI(ch0,ch1,onP,segS=30,ovS=1){
+  const P=(p,t)=>onP&&onP(p,t);
+  AI.onProgress=m=>{
+    if(m.phase==='download')P(0.02+0.2*m.p,'Mengunduh model AI… '+Math.round(m.mb)+' / ±170 MB');
+    else if(m.phase==='load')P(0.22,'Memuat model AI…');
+    else if(m.phase==='init')P(0.23,'Menyiapkan model AI…');
+    else if(m.phase==='sep'&&AI._seg)P(0.25+0.73*((AI._seg.k+m.p)/AI._seg.n),'Memisahkan dengan AI… bagian '+(AI._seg.k+1)+' dari '+AI._seg.n);
+  };
+  P(0.01,'Menyiapkan AI…');
+  await aiInit();
+  const len=ch0.length,L=Math.round(segS*44100),O=Math.round(ovS*44100),n=Math.max(1,Math.ceil(len/L));
+  const outLen=Math.floor(len/2),out={drums:new Float32Array(outLen),bass:new Float32Array(outLen),other:new Float32Array(outLen),vocals:new Float32Array(outLen)};
+  for(let k=0;k<n;k++){
+    AI._seg={k,n};
+    const a=k*L,s=Math.max(0,a-O),e=Math.min(len,a+L+O);
+    const r=await aiSep(ch0.slice(s,e),ch1.slice(s,e));
+    const half=x=>Math.floor(x/2),hs=half(s),ha=half(a),hb=half(Math.min(len,a+L)),hO=half(O);
+    for(const key in out){
+      const src=r.stems[key],dst=out[key];
+      for(let i=0;i<src.length;i++){
+        const j=hs+i;if(j>=outLen)break;
+        let w=1;
+        if(k>0&&j<ha+hO)w=Math.max(0,Math.min(1,(j-(ha-hO))/(2*hO)));
+        if(k<n-1&&j>hb-hO)w=Math.min(w,Math.max(0,Math.min(1,((hb+hO)-j)/(2*hO))));
+        dst[j]+=src[i]*w;
+      }
+    }
+  }
+  AI._seg=null;P(1,'Selesai');
+  return out;
+}
+
+/* ================= Ngulik Studio: aplikasi ================= */
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+const SRW=22050; // laju sampel kerja
+const STEMS=[['drums','Drum'],['bass','Bass'],['other','Gitar & keyboard'],['vocals','Vokal']];
+const INSTS=['bass','gitar','keys','vokal'];
+const INST_STEM={bass:'bass',gitar:'other',keys:'other',vokal:'vocals'};
+const INST_NAME={bass:'bass',gitar:'gitar',keys:'keyboard',vokal:'vokal'};
+const SOLFA=['do','di','re','ri','mi','fa','fi','sol','sel','la','le','si'];
+const ANGKA=['1','#1','2','#2','3','4','#4','5','#5','6','#6','7'];
+let TR=0,CAPO=0;
+{const v=store.get('ns.inst');if(INSTS.includes(v))INST=v;}
+
+/* ---------- lagu demo: band 4 track, disintesis di browser ---------- */
+function genDemoBand(){
+  const SR=SRW,bpm=96,beat=60/bpm,bars=10;
+  let seed=20261;const R=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
+  const mtof=m=>440*Math.pow(2,(m-69)/12);
+  const N=Math.ceil((0.5+bars*4*beat+1.4)*SR);
+  const st={drums:new Float32Array(N),bass:new Float32Array(N),other:new Float32Array(N),vocals:new Float32Array(N)};
+  const ks=(out,midi,t0,dur,amp)=>{const f=mtof(midi)*Math.pow(2,(R()-.5)*5/1200),P=Math.max(2,Math.round(SR/f-0.5)),buf=new Float32Array(P);let lp=0;
+    for(let i=0;i<P;i++){const w=R()*2-1;lp=lp*0.5+w*0.5;buf[i]=lp;}const s0=Math.floor(t0*SR),len=Math.floor((dur+0.08)*SR);let ix=0;
+    for(let i=0;i<len&&s0+i<N;i++){const a=buf[ix],b=buf[(ix+1)%P];buf[ix]=(a+b)*0.5*0.993;ix=(ix+1)%P;const tt=i/SR,e=tt>dur?Math.max(0,1-(tt-dur)/0.08):1;out[s0+i]+=a*amp*e;}};
+  const bassN=(m,t0,dur)=>{const f=mtof(m),s0=Math.floor(t0*SR),len=Math.floor((dur+0.03)*SR);
+    for(let i=0;i<len&&s0+i<N;i++){const tt=i/SR;let e=tt<0.005?tt/0.005:Math.exp(-tt/1.2);if(tt>dur)e*=Math.max(0,1-(tt-dur)/0.03);const w=6.2832*f*tt;
+      st.bass[s0+i]+=0.35*e*(Math.sin(w)+0.5*Math.sin(2*w)*Math.exp(-tt*2)+0.25*Math.sin(3*w)*Math.exp(-tt*3)+0.12*Math.sin(4*w)*Math.exp(-tt*4));}};
+  const VOW=[[800,1150,2900],[400,2000,2550],[500,1700,2500],[600,1000,2600]];
+  const voc=(m0,t0,dur,vi)=>{const s0=Math.floor(t0*SR),len=Math.floor((dur+0.04)*SR),F=VOW[vi%VOW.length],BW=[90,110,160];
+    const env=f=>{let a=0.05;for(let j=0;j<3;j++){const d=(f-F[j])/BW[j];a+=[1,0.7,0.35][j]/(1+d*d);}return a*Math.min(1,300/f+0.4);};
+    const ph=new Float64Array(30);for(let k=0;k<30;k++)ph[k]=R()*6.28;const vr=5+R(),vd=0.3+R()*0.15;
+    for(let i=0;i<len&&s0+i<N;i++){const tt=i/SR;let m=m0;if(tt>0.18)m+=vd*Math.sin(6.2832*vr*(tt-0.18))*Math.min(1,(tt-0.18)/0.2);if(tt<0.05)m-=0.6*(1-tt/0.05);
+      const f0=mtof(m);let e=tt<0.03?tt/0.03:1;if(tt>dur)e*=Math.max(0,1-(tt-dur)/0.04);let v=0;
+      for(let k=1;k<=30;k++){const f=f0*k;if(f>7500)break;ph[k-1]+=6.2832*f/SR;v+=Math.sin(ph[k-1])*env(f)/Math.sqrt(k);}
+      st.vocals[s0+i]+=v*0.35*e*0.5;}};
+  const kick=t0=>{const s0=Math.floor(t0*SR);let ph=0;for(let i=0;i<0.35*SR&&s0+i<N;i++){const tt=i/SR,f=50+90*Math.exp(-tt*30);ph+=6.2832*f/SR;st.drums[s0+i]+=0.6*Math.sin(ph)*Math.exp(-tt*9);}};
+  const snare=t0=>{const s0=Math.floor(t0*SR);let lp=0;for(let i=0;i<0.22*SR&&s0+i<N;i++){const tt=i/SR,n=R()*2-1;lp=0.6*lp+0.4*n;st.drums[s0+i]+=0.35*((n-lp)*0.9*Math.exp(-tt*18)+0.5*Math.sin(6.2832*185*tt)*Math.exp(-tt*25));}};
+  const hat=(t0,a)=>{const s0=Math.floor(t0*SR);let p=0;for(let i=0;i<0.06*SR&&s0+i<N;i++){const tt=i/SR,n=R()*2-1;st.drums[s0+i]+=a*(n-p)*Math.exp(-tt*70);p=n;}};
+  // Am – F – C – G – Am – F – C – G – F – G
+  const prog=[[9,'m'],[5,''],[0,''],[7,''],[9,'m'],[5,''],[0,''],[7,''],[5,''],[7,'']];
+  let t=0.5;
+  for(const[root,type]of prog){
+    const iv=type==='m'?[0,3,7]:[0,4,7],bm=40+((root-4+12)%12),v=[bm,bm+7,bm+12+iv[1],bm+12+iv[2],bm+24].filter(x=>x<=76);
+    for(let k=0;k<4;k++)v.forEach((m,j)=>ks(st.other,m,t+k*beat+j*0.011,beat*0.95,0.12*(0.8+R()*0.4)));
+    const br=28+((root-4+12)%12);[[0,1,0],[1,0.5,0],[1.5,0.5,7],[2,1,0],[3,0.5,12],[3.5,0.5,7]].forEach(([pb,pl,o])=>{let m=br+o;if(m>52)m-=12;bassN(m,t+pb*beat,pl*beat*0.9);});
+    for(let k=0;k<4;k++){if(k%2===0)kick(t+k*beat);else snare(t+k*beat);hat(t+k*beat,0.12);hat(t+(k+0.5)*beat,0.08);}
+    t+=4*beat;
+  }
+  const mel=[[76,1],[74,0.5],[72,0.5],[69,2],[72,1],[71,0.5],[69,0.5],[67,2],[69,1],[72,1],[74,1],[76,1],[74,3],[0,1],[72,1],[71,1],[69,2],[67,1],[69,3],[0,1],[72,2],[74,2],[76,4]];
+  let vt=0.5+4*beat,vi=0;for(const[m,b]of mel){if(m)voc(m,vt,b*beat*0.9,vi++);vt+=b*beat;}
+  const mix=new Float32Array(N);for(const k in st)for(let i=0;i<N;i++)mix[i]+=st[k][i];
+  let pk=0;for(const v of mix)pk=Math.max(pk,Math.abs(v));const g=0.85/pk;
+  for(let i=0;i<N;i++)mix[i]*=g;for(const k in st)for(let i=0;i<N;i++)st[k][i]*=g;
+  return{mix,stems:st};
+}
+
+/* ---------- audio & pemutar ---------- */
+let ctx=null;
+function ensureCtx(){if(!ctx){const AC=window.AudioContext||window.webkitAudioContext;ctx=new AC();}return ctx;}
+function wavBlob(s,sr){
+  const b=new ArrayBuffer(44+s.length*2),v=new DataView(b);
+  const w=(o,str)=>{for(let i=0;i<str.length;i++)v.setUint8(o+i,str.charCodeAt(i));};
+  w(0,'RIFF');v.setUint32(4,36+s.length*2,true);w(8,'WAVE');w(12,'fmt ');
+  v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);
+  v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,s.length*2,true);
+  for(let i=0;i<s.length;i++)v.setInt16(44+i*2,clamp(s[i],-1,1)*32767,true);
+  return new Blob([b],{type:'audio/wav'});
+}
+const player={
+  el:null,url:null,own:false,buf:null,getBuf:null,useWA:false,src:null,playing:false,rate:1,off:0,at:0,dur:0,
+  load(url,dur,getBuf,own,startAt,autoplay){
+    this.unload();this.url=url;this.own=own;this.dur=dur;this.getBuf=getBuf;this.useWA=false;this.off=startAt||0;
+    const el=new Audio();el.preload='auto';el.setAttribute('playsinline','');
+    try{el.preservesPitch=true;el.mozPreservesPitch=true;el.webkitPreservesPitch=true;}catch(e){}
+    el.addEventListener('error',()=>{if(this.el===el)this.useWA=true;});
+    el.addEventListener('ended',()=>{if(this.el===el)this.ended();});
+    if(startAt||autoplay)el.addEventListener('loadedmetadata',()=>{if(this.el!==el)return;try{el.currentTime=startAt||0;}catch(e){}if(autoplay)this.play();},{once:true});
+    el.src=url;this.el=el;
+  },
+  unload(){this.pause();if(this.el){this.el.removeAttribute('src');this.el=null;}if(this.url&&this.own)URL.revokeObjectURL(this.url);this.url=null;this.buf=null;this.dur=0;},
+  time(){
+    if(this.useWA)return this.playing?Math.min(this.dur,this.off+(ctx.currentTime-this.at)*this.rate):this.off;
+    return this.el?this.el.currentTime:0;
+  },
+  async play(){
+    if(!this.dur)return;
+    if(!this.useWA&&this.el){
+      try{this.el.playbackRate=this.rate;if(this.el.currentTime>=this.dur-0.05)this.el.currentTime=0;await this.el.play();this.playing=true;ui();kick();return;}
+      catch(e){this.off=this.el.currentTime||0;this.useWA=true;}
+    }
+    await this.playWA();
+  },
+  async playWA(){
+    ensureCtx();try{await ctx.resume();}catch(e){}
+    if(!this.buf)this.buf=await this.getBuf();
+    const s=ctx.createBufferSource();s.buffer=this.buf;s.playbackRate.value=this.rate;s.connect(ctx.destination);
+    if(this.off>=this.dur-0.05)this.off=0;
+    this.at=ctx.currentTime;s.start(0,this.off);
+    s.onended=()=>{if(this.src===s){this.src=null;this.off=this.dur;this.playing=false;this.ended();}};
+    this.src=s;this.playing=true;ui();kick();
+  },
+  pause(){
+    if(this.useWA){if(this.src){this.off=this.time();const s=this.src;this.src=null;try{s.stop();}catch(e){}}}
+    else if(this.el)this.el.pause();
+    this.playing=false;ui();
+  },
+  seek(t){
+    t=clamp(t,0,this.dur);
+    if(this.useWA){const was=this.playing;if(was)this.pause();this.off=t;if(was)this.playWA();}
+    else if(this.el){try{this.el.currentTime=t;}catch(e){}}
+  },
+  setRate(r){
+    this.rate=r;
+    if(this.useWA){if(this.playing){this.pause();this.playWA();}}
+    else if(this.el)this.el.playbackRate=r;
+  },
+  ended(){this.playing=false;viewT=this.dur;ui();render();}
+};
+
+/* ---------- state ---------- */
+let song=null;     // {name,kind,mono,file,stems,cache,dur,url}
+let track=null;    // tampilan yang sedang diulik
+let viewT=0,live=null,busy=false,pendingFile=null;
+const loop={a:null,b:null,on:false};
+const mix={};for(const[k]of STEMS)mix[k]={vol:1,mute:false,solo:false};
+const roll=$('#roll'),fret=$('#fret'),piano=$('#piano');
+let raf=0;
+function kick(){if(!raf)raf=requestAnimationFrame(tick);}
+function tick(){
+  raf=0;
+  if(live)processLive();
+  if(player.playing){viewT=player.time();
+    if(loop.on&&loop.a!=null&&loop.b!=null&&loop.b>loop.a&&viewT>=loop.b){player.seek(loop.a);viewT=loop.a;}}
+  render();
+  if(live||player.playing)kick();
+}
+function currentT(){return live?ctx.currentTime-live.t0:viewT;}
+
+/* ---------- warna aksen untuk kanvas ---------- */
+let ACC='#ffc15e',ACCRGB='255,193,94',ACCINK='#2a1700';
+function readAccent(){const cs=getComputedStyle(document.body);ACC=cs.getPropertyValue('--acc').trim()||ACC;ACCRGB=cs.getPropertyValue('--acc-rgb').trim()||ACCRGB;ACCINK=cs.getPropertyValue('--acc-ink').trim()||ACCINK;}
+const GA=a=>`rgba(${ACCRGB},${a})`;
+
+/* ---------- pesan & progres ---------- */
+const msg=t=>{$('#msg').textContent=t||'';};
+function overlay(text,p){const o=$('#overlay');if(text==null){o.hidden=true;return;}o.hidden=false;$('#ovText').textContent=text;$('#ovBar').style.width=Math.round((p||0)*100)+'%';}
+function sepProgress(p,t){$('#sepBar').style.width=Math.round(clamp(p,0,1)*100)+'%';if(t)$('#sepText').textContent=t;}
+
+/* ---------- memuat lagu ---------- */
+async function decodeFile(file){
+  const ab=await file.arrayBuffer();ensureCtx();
+  return await new Promise((res,rej)=>{const p=ctx.decodeAudioData(ab,res,rej);if(p&&p.catch)p.catch(rej);});
+}
+async function renderAt(buf,rate,channels,maxS){
+  const dur=Math.min(buf.duration,maxS),len=Math.ceil(dur*rate);
+  const OAC=window.OfflineAudioContext||window.webkitOfflineAudioContext;
+  const oc=new OAC(channels,len,rate);const s=oc.createBufferSource();s.buffer=buf;s.connect(oc.destination);s.start(0);
+  const r=await oc.startRendering();
+  const out=[];for(let c=0;c<channels;c++)out.push(r.getChannelData(Math.min(c,r.numberOfChannels-1)).slice(0,len));
+  return out;
+}
+const MAXS=360;
+function nextPending(){if(pendingFile){const f=pendingFile;pendingFile=null;loadFile(f);}}
+async function loadFile(file){
+  if(!file)return;
+  if(busy){pendingFile=file;msg('File diterima, menunggu proses sebelumnya selesai…');return;}
+  busy=true;stopMic();player.unload();msg('');
+  try{
+    overlay('Membaca '+file.name+'…',0.05);
+    const buf=await decodeFile(file);
+    if(buf.duration>MAXS)msg('Lagu lebih dari 6 menit; yang dipakai 6 menit pertama.');
+    const [mono]=await renderAt(buf,SRW,1,MAXS);
+    song={name:file.name,kind:null,mono,file,stems:null,cache:{},dur:mono.length/SRW,url:URL.createObjectURL(file)};
+    resetView();overlay(null);
+    showAsk();
+    loadPlayback();
+  }catch(e){overlay(null);msg('File ini tidak bisa dibaca browser. Coba format lain: mp3, m4a, wav, atau mp4.');}
+  busy=false;nextPending();
+}
+async function loadDemo(){
+  if(busy)return;busy=true;stopMic();player.unload();msg('');
+  overlay('Menyiapkan lagu demo…',0.1);await tick0();
+  const d=genDemoBand();
+  song={name:'Lagu demo · Am F C G',kind:'band',mono:d.mix,file:null,stems:{mode:'demo',...d.stems},cache:{},dur:d.mix.length/SRW,url:null};
+  resetView();showMixer();loadPlayback();
+  busy=false;
+  await analyzeCurrent(4.2);
+  nextPending();
+}
+function resetView(){track=null;viewT=0;loop.a=loop.b=null;loop.on=false;for(const k in mix)mix[k]={vol:1,mute:false,solo:false};$('#srcName').textContent=song?song.name:'—';$('#sepName').textContent=song?song.name:'—';renderMixer();rebuildAll();ui();render();}
+
+/* ---------- panel pemisah ---------- */
+let askKind=null,askMethod=store.get('ns.method')==='ai'?'ai':'dsp';
+function showPanel(which){$('#sepPanel').hidden=false;for(const id of['sepAsk','sepBusy','sepMix','sepSingle'])$('#'+id).hidden=id!==which;}
+function showAsk(){
+  askKind=null;showPanel('sepAsk');
+  $$('[data-kind]').forEach(b=>b.setAttribute('aria-pressed','false'));
+  $$('[data-method]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.method===askMethod)));
+  $('#methodBox').hidden=true;$('#sepGo').disabled=true;$('#sepGo').textContent='Mulai ulik';
+}
+function showMixer(){showPanel('sepMix');renderMixer();
+  const m=song.stems.mode;$('#sepBadge').textContent=m==='ai'?'Dipisah: AI Demucs':m==='dsp'?'Dipisah: Cepat':'Track terpisah (demo)';
+  $('#sepAgain').hidden=m!=='dsp';}
+function showSingle(){showPanel('sepSingle');}
+async function startSeparation(method){
+  if(!song)return;busy=true;player.pause();
+  showPanel('sepBusy');sepProgress(0,'Menyiapkan…');overlay('Memisahkan instrumen…',0);
+  try{
+    let st;
+    if(method==='ai'){
+      let ch0,ch1;
+      if(song.file){const buf=await decodeFile(song.file);[ch0,ch1]=await renderAt(buf,44100,2,MAXS);}
+      else{ch0=new Float32Array(song.mono.length*2);for(let i=0;i<ch0.length;i++)ch0[i]=song.mono[i>>1];ch1=ch0.slice();}
+      const r=await separateAI(ch0,ch1,(p,t)=>{sepProgress(p,t);overlay(t,p);});
+      const L=song.mono.length;for(const k in r){if(r[k].length!==L){const a=new Float32Array(L);a.set(r[k].subarray(0,L));r[k]=a;}}
+      st={mode:'ai',...r};
+    }else{
+      const r=await separateDSP(song.mono,SRW,(p,t)=>{sepProgress(p,t);overlay(t,p);});
+      st={mode:'dsp',drums:r.drums,bass:r.bass,other:r.other,vocals:r.vocals,bassF0:r.bassF0,hop:r.hop};
+    }
+    song.stems=st;song.kind='band';song.cache={};
+    for(const k in mix)mix[k]={vol:1,mute:false,solo:false};
+    overlay(null);showMixer();loadPlayback();busy=false;
+    await analyzeCurrent(0);
+  }catch(e){
+    overlay(null);busy=false;
+    if(method==='ai'){const em=String(e&&e.message||e);
+      const why=/importScripts|fetch|Failed|network|diunduh|Load failed/i.test(em)?'komponen AI tidak bisa diunduh, cek koneksi internet atau buka dari link GitHub Pages':/memory|alloc|Out of/i.test(em)?'memori perangkat tidak cukup, coba di laptop/PC':em;
+      msg('Mode AI belum bisa jalan ('+why+'). Dipakai mode Cepat dulu.');return startSeparation('dsp');}
+    msg('Gagal memisahkan: '+(e&&e.message||e));showAsk();
+  }
+}
+
+/* ---------- mixer ---------- */
+function renderMixer(){
+  const box=$('#mixer');if(!box)return;
+  box.innerHTML=STEMS.map(([k,label])=>{const m=mix[k],hear=audible(k);
+    return `<div class="mrow${hear?'':' off'}" data-k="${k}"><i class="dot" style="background:var(--c-${k})"></i><b>${label}${INST_STEM[INST]===k?'<small>yang diulik</small>':''}</b>
+      <button class="tg s" type="button" data-act="solo" aria-pressed="${m.solo}" aria-label="Solo ${label}">S</button>
+      <button class="tg m" type="button" data-act="mute" aria-pressed="${m.mute}" aria-label="Bisukan ${label}">M</button>
+      <input type="range" min="0" max="150" value="${Math.round(m.vol*100)}" data-act="vol" aria-label="Volume ${label}"></div>`;}).join('');
+}
+function audible(k){const anySolo=Object.values(mix).some(m=>m.solo);return !mix[k].mute&&(!anySolo||mix[k].solo)&&mix[k].vol>0;}
+function mixNeutral(){return Object.values(mix).every(m=>!m.mute&&!m.solo&&m.vol===1);}
+let mixTimer=0;
+function mixChanged(){renderMixer();clearTimeout(mixTimer);mixTimer=setTimeout(loadPlayback,220);}
+function loadPlayback(){
+  if(!song)return;
+  const was=player.playing,t=player.dur?player.time():viewT;
+  if(song.url&&(!song.stems||mixNeutral())){
+    player.load(song.url,song.dur,async()=>{const b=ensureCtx().createBuffer(1,song.mono.length,SRW);b.getChannelData(0).set(song.mono);return b;},false,t,was);
+  }else{
+    const L=song.mono.length,out=new Float32Array(L);
+    if(song.stems){for(const[k]of STEMS){if(!audible(k))continue;const g=mix[k].vol,s=song.stems[k];for(let i=0;i<L;i++)out[i]+=s[i]*g;}}
+    else out.set(song.mono);
+    player.load(URL.createObjectURL(wavBlob(out,SRW)),song.dur,async()=>{const b=ensureCtx().createBuffer(1,L,SRW);b.getChannelData(0).set(out);return b;},true,t,was);
+  }
+  ui();
+}
+
+/* ---------- rencana analisis per instrumen ---------- */
+function plan(){
+  if(!song)return null;
+  const st=song.stems;
+  if(!st)return{mel:INST==='bass'?'low:mono':'high:mono',ch:'high:mono'};
+  if(st.mode==='dsp')return{mel:INST==='bass'?'bassdirect':INST==='vokal'?'high:vocals':'high:mono',ch:'high:mono'};
+  return{mel:INST==='bass'?'low:bass':INST==='vokal'?'high:vocals':'high:other',ch:'high:bass+other'};
+}
+function srcOf(name){
+  if(name==='mono')return song.mono;
+  const st=song.stems;if(name.includes('+')){const parts=name.split('+'),L=song.mono.length,o=new Float32Array(L);for(const p of parts){const s=st[p];for(let i=0;i<L;i++)o[i]+=s[i];}return o;}
+  return st[name];
+}
+async function runAnalysis(key,onP){
+  if(song.cache[key])return song.cache[key];
+  let tr;
+  if(key==='bassdirect'){
+    const st=song.stems,fr=[];
+    for(let i=0;i<st.bassF0.length;i++){const f=st.bassF0[i];fr.push({t:i*st.hop,midi:f?69+12*Math.log2(f/440):null,rms:1});}
+    const xb=downsampleLP(st.bass,4,st.bass.length);const on=await detectOnsets(xb,SRW/4,true);
+    tr={frames:fr,notes:buildNotes(fr,on,null),chords:[],duration:song.dur};onP&&onP(1);
+  }else{
+    const [eng,src]=key.split(':'),x=srcOf(src);
+    tr=await (eng==='low'?analyzeLow:analyzeHigh)(x,SRW,x.length,song.name,'file',onP);
+  }
+  song.cache[key]=tr;return tr;
+}
+async function analyzeCurrent(startAt){
+  if(!song||live)return;
+  const pl=plan();const keys=[...new Set([pl.mel,pl.ch])];
+  busy=true;
+  try{
+    for(let i=0;i<keys.length;i++){
+      if(song.cache[keys[i]])continue;
+      await runAnalysis(keys[i],p=>overlay(`Mengulik ${INST_NAME[INST]}… ${Math.round(p*100)}%`,(i+p)/keys.length));
+    }
+  }finally{busy=false;}
+  overlay(null);
+  const m=song.cache[pl.mel],c=song.cache[pl.ch];
+  track={name:song.name,duration:song.dur,frames:m.frames,notes:m.notes.map(n=>({...n})),chords:c.chords||[],key:c.key||null,source:'file'};
+  if(!track.key&&m.key)track.key=m.key;
+  if(song.bpm==null)song.bpm=estimateBPM(song.stems?song.stems.drums:song.mono);
+  assignPos(track);computeRange(track);
+  if(startAt!=null)viewT=startAt;
+  rebuildAll();ui();render();
+  if(!track.notes.length&&!track.chords.length)msg('Belum ada nada atau chord yang terbaca. Coba rekaman yang lebih jelas.');
+}
+
+/* ---------- tempo ---------- */
+function estimateBPM(x){
+  if(!x||x.length<SRW*4)return null;
+  const hop=Math.round(SRW*0.01),n=Math.floor(x.length/hop),env=new Float32Array(n);
+  let prev=0;for(let i=0;i<n;i++){let e=0;const o=i*hop;for(let k=0;k<hop;k++){const v=x[o+k];e+=v*v;}e=Math.log1p(e*1000);env[i]=Math.max(0,e-prev);prev=e;}
+  let best=0,bl=0;
+  for(let lag=33;lag<=100;lag++){let s=0;for(let i=lag;i<n;i++)s+=env[i]*env[i-lag];const bpm=6000/lag,w=Math.exp(-0.5*Math.pow(Math.log2(bpm/110)/0.6,2));s*=w;if(s>best){best=s;bl=lag;}}
+  return bl?Math.round(6000/bl):null;
+}
+
+/* ---------- info saat ini ---------- */
+function frameAt(T){const F=track.frames;let lo=0,hi=F.length-1;if(hi<0)return -1;while(lo<hi){const m=(lo+hi+1)>>1;if(F[m].t<=T)lo=m;else hi=m-1;}return lo;}
+function idxAt(arr,T){let lo=0,hi=arr.length-1,idx=-1;while(lo<=hi){const m=(lo+hi)>>1;if(arr[m].t0<=T){idx=m;lo=m+1;}else hi=m-1;}return idx;}
+function liveMedian(){const F=track.frames,w=[];const tEnd=F.length?F[F.length-1].t:0;
+  for(let i=F.length-1;i>=0&&i>=F.length-6;i--){if(F[i].t<tEnd-0.12)break;if(F[i].midi!=null)w.push(F[i].midi);}
+  if(w.length<2)return null;w.sort((a,b)=>a-b);return w[w.length>>1];}
+function curInfo(T){
+  if(!track)return null;
+  const idx=idxAt(track.notes,T),note=idx>=0?track.notes[idx]:null,active=!!note&&T<=note.t1+0.06;
+  let midiF=null;if(live)midiF=liveMedian();else if(track.frames.length){const fi=frameAt(T);if(fi>=0&&Math.abs(track.frames[fi].t-T)<0.05)midiF=track.frames[fi].midi;}
+  const ci=idxAt(track.chords,T),chord=ci>=0?track.chords[ci]:null,cActive=!!chord&&T<=chord.t1+0.1;
+  return{idx,note,active,midiF,ci,chord,cActive};
+}
+function rangeOf(){
+  if(track&&track.source==='mic'){const lo=INST==='bass'?26:INST==='vokal'?45:38;return{lo,hi:lo+(INST==='bass'?28:36)};}
+  return track&&track.range?track.range:{lo:INST==='bass'?26:40,hi:INST==='bass'?52:76};
+}
+const trNote=m=>m+TR;
+function assignPos(tr){if(!tr)return;if(!TR){assignAll(tr);return;}const tmp={notes:tr.notes.map(n=>({midi:n.midi+TR}))};assignAll(tmp);tr.notes.forEach((n,i)=>{n.pos=tmp.notes[i].pos;n.alts=tmp.notes[i].alts;});}
+const chordLabel=id=>NOTE[((TPL[id].root+TR)%12+12)%12]+TPL[id].suf;
+const doPc=()=>{const k=track&&track.key;if(!k||k.r<0.3)return null;return((k.minor?(k.tonic+3)%12:k.tonic)+TR+120)%12;};
+function angkaOf(m){const d=doPc();if(d==null)return null;const rel=((m-d)%12+12)%12;return{a:ANGKA[rel],s:SOLFA[rel]};}
+
+/* ---------- hero ---------- */
+const el={chordbox:$('#chordbox'),cName:$('#cName'),cSub:$('#cSub'),cDiag:$('#cDiag'),cTones:$('#cTones'),info:$('#info'),nName:$('#nName'),state:$('#state'),pos:$('#pos'),hz:$('#hz'),alts:$('#alts'),needle:$('#needle'),cents:$('#cents')};
+const lastTxt={};
+function setT(k,v,html){if(lastTxt[k]===v)return;lastTxt[k]=v;if(html)el[k].innerHTML=v;else el[k].textContent=v;}
+function updateHero(info){
+  const T=tun(),c=info&&info.chord;
+  el.chordbox.classList.toggle('idle',!(info&&info.cActive));
+  setT('cName',c?chordLabel(c.id):'–');
+  const capoNote=INST==='gitar'&&CAPO&&c?`capo ${CAPO}: bentuk ${NOTE[((TPL[c.id].root+TR-CAPO)%12+12)%12]+TPL[c.id].suf}`:'';
+  setT('cSub',capoNote);
+  const sk=(c?c.id:'none')+'|'+tunKeyNow()+'|'+TR+'|'+CAPO+'|'+INST;
+  if(lastTxt.diag!==sk){lastTxt.diag=sk;
+    if(INST==='gitar')el.cDiag.innerHTML=diagramSVG(c?shapeFor(c.id,TR-CAPO):null);
+    if(INST==='keys'||INST==='vokal')el.cTones.innerHTML=c?TPL[c.id].iv.map(iv=>`<span>${NOTE[((TPL[c.id].root+TR+iv)%12+12)%12]}</span>`).join(''):'';
+  }
+  if(!info||!info.note){
+    el.info.classList.add('idle');setT('nName','–');
+    setT('state',live?'Mendengarkan':'Siap');setT('pos',track?'Mainkan atau putar lagunya':'Pilih instrumen, lalu upload lagu atau putar demo');setT('hz','— Hz');setT('alts','');
+    el.needle.style.left='50%';el.needle.classList.remove('off');setT('cents','0 cent');return;
+  }
+  const n=info.note,m=trNote(n.midi),name=nn(m);
+  el.info.classList.toggle('idle',!info.active);
+  const ang=angkaOf(m);
+  setT('nName',name+oct(m));
+  setT('state',info.active?(INST==='vokal'?'Nada vokal':INST==='bass'?'Nada bass':'Nada melodi'):'Nada terakhir');
+  if(INST==='bass'||INST==='gitar'){
+    if(n.pos){const s=T.names[n.pos.s];
+      setT('pos',(n.pos.f===0?`Senar <em>${s}</em> · dibunyikan lepas`:`Senar <em>${s}</em> · fret <em>${n.pos.f}</em>`)+(n.pos.oct?' <small>(oktaf digeser)</small>':''),true);
+    }else setT('pos','Di luar jangkauan senar');
+    setT('alts',n.alts&&n.alts.length?'Bisa juga: '+n.alts.slice(0,3).map(p=>`senar ${T.names[p.s]} fret ${p.f}`).join(' · '):'Cuma ada satu posisi untuk nada ini');
+  }else{
+    setT('pos',ang?`Not <em>${ang.a}</em> · ${ang.s} <small>· do = ${NOTE[doPc()]}</small>`:`Nada <em>${name}${oct(m)}</em>`,true);
+    setT('alts',INST==='vokal'?'Jarum di bawah: seberapa pas nadamu (± cent)':'Tuts yang menyala ada di keyboard di bawah');
+  }
+  const useF=info.active&&info.midiF!=null&&Math.abs(info.midiF-n.midi)<0.6;
+  const mf=useF?info.midiF:n.midi;
+  setT('hz',(440*Math.pow(2,(mf-69)/12)).toFixed(1)+' Hz');
+  const cc=useF?Math.round((info.midiF-n.midi)*100):0;
+  el.needle.style.left=(50+clamp(cc,-50,50))+'%';el.needle.classList.toggle('off',Math.abs(cc)>12);
+  setT('cents',(cc>0?'+':cc<0?'−':'')+Math.abs(cc)+' cent');
+}
+const tunKeyNow=()=>tunSel[fretInst()];
+
+/* ---------- kanvas ---------- */
+function fit(cv){
+  const r=cv.getBoundingClientRect(),d=Math.min(window.devicePixelRatio||1,2);
+  const w=Math.max(1,Math.round(r.width)),h=Math.max(1,Math.round(r.height));
+  if(cv.width!==w*d||cv.height!==h*d){cv.width=w*d;cv.height=h*d;}
+  cv._w=w;cv._h=h;const g=cv.getContext('2d');g.setTransform(d,0,0,d,0,0);return g;
+}
+const ppsOf=W=>Math.max(110,W/5.5);
+function rr(g,x,y,w,h,r){g.beginPath();if(g.roundRect)g.roundRect(x,y,w,h,r);else g.rect(x,y,w,h);}
+function drawRoll(T,info){
+  const g=fit(roll),W=roll._w,H=roll._h;
+  g.clearRect(0,0,W,H);
+  const bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#101016');bg.addColorStop(1,'#07070a');g.fillStyle=bg;g.fillRect(0,0,W,H);
+  const pps=ppsOf(W),frac=live?0.82:0.5,t0=T-frac*W/pps,tEnd=t0+W/pps,X=t=>(t-t0)*pps;
+  const laneH=34,padT=laneH+22,padB=24,h=H-padT-padB;const{lo,hi}=rangeOf();
+  const Y=m=>padT+(hi-m)/(hi-lo)*h,pxs=h/(hi-lo);
+  // area ulang A-B
+  if(loop.a!=null){const xa=X(loop.a),xb=loop.b!=null?X(loop.b):xa+2;g.fillStyle=loop.on?GA(.09):'rgba(255,255,255,.04)';g.fillRect(xa,0,Math.max(2,xb-xa),H);
+    g.fillStyle=GA(.8);g.fillRect(Math.round(xa),0,1.5,H);if(loop.b!=null)g.fillRect(Math.round(xb),0,1.5,H);
+    g.font='700 10px "JetBrains Mono", monospace';g.textBaseline='top';g.fillText('A',xa+4,laneH+10);if(loop.b!=null)g.fillText('B',xb+4,laneH+10);}
+  g.fillStyle='rgba(255,255,255,.025)';g.fillRect(0,0,W,laneH+8);
+  if(track){
+    const C=track.chords;let cs=idxAt(C,t0);if(cs<0)cs=0;
+    g.font='800 15px "Bricolage Grotesque", system-ui, sans-serif';g.textBaseline='middle';g.textAlign='left';
+    for(let i=cs;i<C.length;i++){const c=C[i];if(c.t0>tEnd)break;if(c.t1<t0)continue;
+      const x0=X(c.t0)+1.5,x1=X(c.t1)-1.5,on=info&&info.ci===i&&info.cActive,label=chordLabel(c.id);
+      rr(g,x0,6,Math.max(2,x1-x0),laneH-4,8);g.fillStyle=on?GA(.95):GA(.13);g.fill();
+      if(!on){g.strokeStyle=GA(.35);g.lineWidth=1;g.stroke();}
+      const tw=g.measureText(label).width;if(x1-x0>tw+10){g.fillStyle=on?ACCINK:'#f2f1f8';g.fillText(label,Math.min(Math.max(x0+8,8),x1-tw-8),6+(laneH-4)/2+1);}
+    }
+  }
+  g.font='500 10px "JetBrains Mono", monospace';g.textBaseline='middle';g.textAlign='left';
+  for(let m=Math.ceil(lo);m<=Math.floor(hi);m++){
+    const nm=nn(m+TR),nat=nm.length===1,y=Math.round(Y(m))+.5;
+    g.strokeStyle=nm==='C'?'rgba(200,200,230,.15)':nat?'rgba(200,200,230,.06)':'rgba(200,200,230,.025)';
+    g.lineWidth=1;g.beginPath();g.moveTo(0,y);g.lineTo(W,y);g.stroke();
+    if(nat&&(pxs>=7||nm==='C'||nm==='E'||nm==='A')){g.fillStyle='rgba(180,180,205,.5)';g.fillText(nm+oct(m+TR),6,y);}
+  }
+  g.textBaseline='alphabetic';g.fillStyle='rgba(180,180,205,.42)';
+  for(let s=Math.ceil(Math.max(0,t0));s<=tEnd;s++){const x=Math.round(X(s))+.5;g.fillRect(x,H-padB+4,1,5);if(s%2===0)g.fillText(fmt(s),x+4,H-6);}
+  if(!track)return;
+  const N=track.notes;let start=idxAt(N,t0-0.5);if(start<0)start=0;
+  let prev=start>0?N[start-1]:null;const labels=[];
+  for(let i=start;i<N.length;i++){const n=N[i];if(n.t0>tEnd)break;
+    const x0=X(n.t0),x1=Math.max(X(n.t1),x0+2),y=Y(n.midi);
+    if(prev&&n.t0-prev.t1<0.45){g.strokeStyle='rgba(255,250,240,.38)';g.lineWidth=1.2;g.shadowBlur=0;g.beginPath();g.moveTo(X(prev.t1),Y(prev.midi));g.lineTo(x0,y);g.stroke();}
+    g.strokeStyle=ACC;g.lineWidth=3.2;g.lineCap='round';g.shadowColor=ACC;g.shadowBlur=10;g.beginPath();g.moveTo(x0,y);g.lineTo(x1,y);g.stroke();
+    g.fillStyle=ACC;g.beginPath();g.arc(x0,y,6.5,0,Math.PI*2);g.fill();g.shadowBlur=0;prev=n;
+    const ang=(INST==='vokal'||INST==='keys')?angkaOf(trNote(n.midi)):null;
+    labels.push({x:x0,y,i,text:ang?ang.a:nn(trNote(n.midi))+oct(trNote(n.midi))});
+  }
+  const actI=info&&info.active?info.idx:-1;
+  g.font='600 10px "JetBrains Mono", monospace';g.textBaseline='middle';g.textAlign='center';
+  const placed=[];
+  for(const L of labels){if(L.i===actI)continue;const tw=g.measureText(L.text).width,bx=L.x-tw/2-3,bw=tw+6;let ly=L.y-14;if(ly<padT+4)ly=L.y+14;
+    if(placed.some(q=>bx<q.r+3&&bx+bw>q.l-3&&Math.abs(q.y-ly)<14))continue;placed.push({l:bx,r:bx+bw,y:ly});g.fillStyle='rgba(250,245,255,.6)';g.fillText(L.text,L.x,ly+.5);}
+  g.textAlign='left';
+  const F=track.frames;if(F.length){let fi=frameAt(t0-0.05);if(fi<0)fi=0;
+    g.strokeStyle='rgba(255,255,255,.3)';g.lineWidth=1.2;g.beginPath();let pen=false;
+    for(let i=fi;i<F.length;i++){const f=F[i];if(f.t>tEnd)break;if(f.midi==null||f.midi<lo-1||f.midi>hi+1){pen=false;continue;}const x=X(f.t),y=Y(f.midi);if(pen)g.lineTo(x,y);else g.moveTo(x,y);pen=true;}
+    g.stroke();}
+  const xp=X(T);
+  if(!live){g.fillStyle='rgba(7,7,10,.4)';g.fillRect(xp,laneH+8,W-xp,H);}
+  g.strokeStyle=GA(.55);g.lineWidth=1;g.beginPath();g.moveTo(Math.round(xp)+.5,0);g.lineTo(Math.round(xp)+.5,H);g.stroke();
+  if(info&&info.active){
+    const y=clamp(Y(info.note.midi),padT,padT+h);
+    const rg=g.createRadialGradient(xp,y,0,xp,y,40);rg.addColorStop(0,GA(.55));rg.addColorStop(1,GA(0));g.fillStyle=rg;g.beginPath();g.arc(xp,y,40,0,Math.PI*2);g.fill();
+    g.shadowColor=ACC;g.shadowBlur=24;g.fillStyle=ACC;g.beginPath();g.arc(xp,y,16,0,Math.PI*2);g.fill();g.shadowBlur=0;
+    g.fillStyle='#ffffff';g.globalAlpha=.85;g.beginPath();g.arc(xp,y,8,0,Math.PI*2);g.fill();g.globalAlpha=1;
+    const m=trNote(info.note.midi),ang=(INST==='vokal'||INST==='keys')?angkaOf(m):null,txt=nn(m)+oct(m)+(ang?'  '+ang.a:'');
+    g.font='800 17px "Bricolage Grotesque", system-ui, sans-serif';g.textBaseline='middle';
+    const tw=g.measureText(txt).width;let tx=xp+26;if(tx+tw>W-6)tx=xp-26-tw;
+    g.shadowColor='rgba(0,0,0,.85)';g.shadowBlur=8;g.fillStyle='#fffaf2';g.fillText(txt,tx,y+1);g.shadowBlur=0;
+  }
+}
+function drawFret(info){
+  const T=tun(),ns=T.strings.length,box=$('#fbScroll'),cw=box.clientWidth;
+  const W=Math.max(cw,340),sp=ns>4?26:32,top=16,pad=ns>4?12:14,boardH=(ns-1)*sp+pad*2,H=top+boardH+30;
+  fret.style.width=W+'px';fret.style.height=H+'px';
+  const g=fit(fret);g.clearRect(0,0,W,H);
+  const n=info&&info.note,cur=n&&n.pos;
+  const shape=INST==='gitar'&&info&&info.chord&&info.cActive?shapeFor(info.chord.id,TR-CAPO):null;
+  const need=Math.max(cur?cur.f:0,shape?Math.max(...shape)+CAPO:0);
+  let mx=W<520?12:15;if(need>mx)mx=Math.min(maxF(),need+1);
+  const labelW=26,openX=labelW+11,nutX=labelW+26,endX=W-8,norm=1-Math.pow(2,-mx/12);
+  const FX=k=>nutX+(endX-nutX)*(1-Math.pow(2,-k/12))/norm,PX=k=>k===0?openX:(FX(k-1)+FX(k))/2,RY=s=>top+pad+(ns-1-s)*sp;
+  const bt=top,bb=top+boardH;
+  const wood=g.createLinearGradient(0,bt,0,bb);wood.addColorStop(0,'#33221a');wood.addColorStop(.5,'#271912');wood.addColorStop(1,'#1a110c');
+  g.fillStyle=wood;rr(g,nutX,bt,endX-nutX,boardH,6);g.fill();
+  g.strokeStyle='rgba(255,215,170,.04)';g.lineWidth=1;
+  for(let i=0;i<12;i++){const y=bt+3+i*(boardH-6)/11;g.beginPath();g.moveTo(nutX,y);for(let x=nutX;x<=endX;x+=24)g.lineTo(x,y+Math.sin(x*0.02+i*1.7)*1.6);g.stroke();}
+  g.fillStyle='rgba(240,232,214,.3)';const midY=(bt+bb)/2;
+  for(const k of[3,5,7,9,15,17,19,21]){if(k>mx)continue;g.beginPath();g.arc(PX(k),midY,5,0,Math.PI*2);g.fill();}
+  if(mx>=12){g.beginPath();g.arc(PX(12),bt+boardH*0.3,5,0,Math.PI*2);g.arc(PX(12),bt+boardH*0.7,5,0,Math.PI*2);g.fill();}
+  for(let k=1;k<=mx;k++){const x=Math.round(FX(k))+.5;g.strokeStyle='rgba(190,185,175,.75)';g.lineWidth=2;g.beginPath();g.moveTo(x,bt+1);g.lineTo(x,bb-1);g.stroke();}
+  if(CAPO&&INST==='gitar'&&CAPO<=mx){const x=FX(CAPO)-3;g.fillStyle='rgba(30,30,38,.9)';rr(g,x-5,bt-4,10,boardH+8,4);g.fill();g.strokeStyle=GA(.7);g.lineWidth=1.5;g.stroke();}
+  g.fillStyle='#ece8dc';g.fillRect(nutX-4,bt,5,boardH);
+  g.font='600 10px "JetBrains Mono", monospace';g.textAlign='center';g.textBaseline='alphabetic';
+  for(let k=1;k<=mx;k++){const inl=[3,5,7,9,12,15,17,19,21].includes(k);g.fillStyle=inl?'rgba(235,230,215,.75)':'rgba(170,165,150,.4)';g.fillText(String(k),PX(k),H-8);}
+  g.fillStyle='rgba(170,165,150,.4)';g.fillText('0',openX,H-8);
+  const t=performance.now()/1000;
+  for(let s=0;s<ns;s++){const y=RY(s),act=cur&&cur.s===s&&info.active;
+    g.lineWidth=ns>4?0.9+(ns-1-s)*0.32:1.4+(ns-1-s)*0.55;g.strokeStyle=act?GA(.95):(ns>4&&s>=3?'rgba(225,225,230,.6)':'rgba(215,195,160,.65)');
+    g.shadowColor=ACC;g.shadowBlur=act?10:0;g.beginPath();
+    if(act&&(player.playing||live)){g.moveTo(openX-6,y);for(let x=openX-6;x<=endX;x+=6){const u=(x-nutX)/(endX-nutX);g.lineTo(x,y+Math.sin(u*Math.PI)*1.5*Math.sin(t*40));}}
+    else{g.moveTo(openX-6,y);g.lineTo(endX,y);}
+    g.stroke();g.shadowBlur=0;
+    g.fillStyle=act?ACC:'rgba(190,185,170,.85)';g.textAlign='left';g.textBaseline='middle';g.font='700 12px "JetBrains Mono", monospace';g.fillText(T.names[s],2,y);}
+  if(shape){g.textAlign='center';g.textBaseline='middle';g.font='700 10px "JetBrains Mono", monospace';
+    shape.forEach((f,s)=>{const y=RY(s);if(f<0){g.fillStyle='rgba(242,241,248,.45)';g.fillText('×',openX,y);return;}const ff=f+CAPO;if(f===0&&CAPO)return;const x=PX(ff);g.strokeStyle='rgba(242,241,248,.7)';g.lineWidth=2;rr(g,x-8,y-8,16,16,4);g.stroke();});}
+  if(!track||!n)return;
+  for(const p of n.alts||[]){if(p.f>mx)continue;g.strokeStyle=info.active?GA(.6):GA(.28);g.lineWidth=2;g.beginPath();g.arc(PX(p.f),RY(p.s),8.5,0,Math.PI*2);g.stroke();}
+  if(cur&&cur.f<=mx){const x=PX(cur.f),y=RY(cur.s),a=info.active?1:0.45;
+    if(info.active){const rg=g.createRadialGradient(x,y,0,x,y,28);rg.addColorStop(0,GA(.6));rg.addColorStop(1,GA(0));g.fillStyle=rg;g.beginPath();g.arc(x,y,28,0,Math.PI*2);g.fill();}
+    g.globalAlpha=a;g.fillStyle=ACC;g.beginPath();g.arc(x,y,11.5,0,Math.PI*2);g.fill();
+    g.fillStyle='#111';g.font='800 10.5px "JetBrains Mono", monospace';g.textAlign='center';g.textBaseline='middle';g.fillText(nn(trNote(n.midi)),x,y+0.5);g.globalAlpha=1;}
+}
+function drawPiano(info){
+  const box=$('#fbScroll'),cw=box.clientWidth;
+  const r=rangeOf();let lo=Math.floor(Math.min(r.lo+TR,48)/12)*12,hi=Math.ceil(Math.max(r.hi+TR,72)/12)*12;if(hi-lo>48){lo=hi-48;}
+  const whites=[];for(let m=lo;m<=hi;m++)if(NOTE[m%12].length===1)whites.push(m);
+  const kw=Math.max(22,cw/whites.length),W=Math.max(cw,kw*whites.length),H=150;
+  piano.style.width=W+'px';piano.style.height=H+'px';
+  const g=fit(piano);g.clearRect(0,0,W,H);
+  const cur=info&&info.note&&info.active?trNote(info.note.midi):null;
+  const chordPcs=info&&info.chord&&info.cActive?TPL[info.chord.id].iv.map(iv=>((TPL[info.chord.id].root+TR+iv)%12+12)%12):[];
+  const recent=new Set();if(track&&info){for(let i=Math.max(0,info.idx-3);i<info.idx;i++)recent.add(trNote(track.notes[i].midi));}
+  const xOf={};whites.forEach((m,i)=>xOf[m]=i*kw);
+  // tuts putih
+  whites.forEach((m,i)=>{const x=i*kw,isC=m===cur,inC=chordPcs.includes(m%12);
+    g.fillStyle='#ecebf3';rr(g,x+1,0,kw-2,H-2,5);g.fill();
+    if(isC||inC||recent.has(m)){g.fillStyle=isC?ACC:inC?`rgba(${ACCRGB},.45)`:`rgba(${ACCRGB},.2)`;rr(g,x+1,0,kw-2,H-2,5);g.fill();}
+    if(NOTE[m%12]==='C'){g.fillStyle=isC?'#111':'#6a6980';g.font='600 9.5px "JetBrains Mono", monospace';g.textAlign='center';g.textBaseline='alphabetic';g.fillText('C'+oct(m),x+kw/2,H-8);}
+  });
+  // tuts hitam
+  for(let m=lo;m<=hi;m++){if(NOTE[m%12].length===1)continue;const left=xOf[m-1];if(left==null)continue;const x=left+kw*0.66,bw=kw*0.66,isC=m===cur,inC=chordPcs.includes(m%12);
+    g.fillStyle=isC?ACC:inC?`rgba(${ACCRGB},.7)`:'#1b1b23';rr(g,x,0,bw,H*0.6,4);g.fill();}
+  if(cur!=null){const isW=NOTE[cur%12].length===1;let x=isW?xOf[cur]+kw/2:(xOf[cur-1]!=null?xOf[cur-1]+kw:null);
+    if(x!=null){const ang=angkaOf(cur);g.fillStyle=isW?'#111':'#111';g.font='800 12px "Bricolage Grotesque", system-ui, sans-serif';g.textAlign='center';g.textBaseline='middle';
+      g.fillText(ang?ang.a:nn(cur),x,isW?H*0.78:H*0.45);
+      if(box.scrollWidth>box.clientWidth){const want=x-box.clientWidth/2;if(Math.abs(box.scrollLeft-want)>box.clientWidth*0.35)box.scrollLeft=want;}}}
+}
+
+/* ---------- TAB & not angka ---------- */
+const tabEl=$('#tab'),tabBox=$('#tabBox'),naEl=$('#notang');let tabSig='',hlIdx=-1;
+function tabRows(notes,html){
+  const T=tun(),ns=T.strings.length,rows=[];
+  for(let r=0;r<ns;r++){const s=ns-1-r;rows.push({s,name:T.names[s].padEnd(2,' '),parts:[]});}
+  notes.forEach((n,i)=>{if(!n.pos)return;const tok=n.pos.oct?`(${n.pos.f})`:String(n.pos.f);
+    for(const row of rows){const c=row.s===n.pos.s?tok:'-'.repeat(tok.length);row.parts.push(html?`<span data-n="${i}">${c}</span>-`:c+'-');}});
+  return rows.map(r=>r.name+'|-'+r.parts.join('')+'|').join('\n');
+}
+function angkaHTML(n,i,base){
+  const m=trNote(n.midi),a=angkaOf(m);if(!a)return `<span class="n" data-n="${i}">${nn(m)}</span>`;
+  const d=doPc(),o=Math.floor((m-d-base)/12);const cls=o>=2?' hi2':o===1?' hi':o<=-1?' lo':'';
+  return `<span class="n${cls}" data-n="${i}">${a.a}</span>`;
+}
+function rebuildTab(force){
+  const isNA=INST==='keys'||INST==='vokal';
+  const sig=(track?track.notes.length+'|'+(track.notes.length?track.notes[track.notes.length-1].midi:''):'none')+'|'+tunKeyNow()+'|'+INST+'|'+TR;
+  if(!force&&sig===tabSig)return;tabSig=sig;hlIdx=-1;
+  $('#tabCount').textContent=(track?track.notes.length:0)+' nada';
+  tabEl.hidden=isNA;naEl.hidden=!isNA;
+  if(!track){tabEl.textContent='';naEl.innerHTML='';return;}
+  if(!isNA){tabEl.innerHTML=tabRows(track.notes,true);return;}
+  const d=doPc();
+  if(d==null){naEl.innerHTML=track.notes.map((n,i)=>`<span class="n" data-n="${i}">${nn(trNote(n.midi))}</span>`).join('');return;}
+  const ms=track.notes.map(n=>trNote(n.midi)).sort((a,b)=>a-b),med=ms.length?ms[ms.length>>1]:60;
+  const base=12*Math.floor((med-d)/12);
+  let html='',lastC=-1;
+  track.notes.forEach((n,i)=>{
+    const ci=idxAt(track.chords,n.t0+0.01);if(ci>=0&&ci!==lastC&&n.t0<track.chords[ci].t1){if(i)html+='<span class="sep">|</span>';html+=`<span class="ch">${chordLabel(track.chords[ci].id)}</span>`;lastC=ci;}
+    html+=angkaHTML(n,i,base);});
+  naEl.innerHTML=html;
+}
+function updateTabHL(info){
+  const i=info&&info.note&&info.active?info.idx:-1;if(i===hlIdx)return;hlIdx=i;
+  const host=(INST==='keys'||INST==='vokal')?naEl:tabEl;
+  host.querySelectorAll('.on').forEach(e=>e.classList.remove('on'));
+  if(i<0)return;const els=host.querySelectorAll(`[data-n="${i}"]`);els.forEach(e=>e.classList.add('on'));
+  if(els[0]){if(host===tabEl)tabBox.scrollLeft=Math.max(0,els[0].offsetLeft-tabBox.clientWidth/2);
+    else{const top=els[0].offsetTop;if(top<tabBox.scrollTop||top>tabBox.scrollTop+tabBox.clientHeight-30)tabBox.scrollTop=top-20;}}
+}
+function copyNotes(){
+  if(!track||!track.notes.length)return '';
+  if(INST==='keys'||INST==='vokal'){const d=doPc();return (d!=null?`Do = ${NOTE[d]}\n`:'')+naEl.innerText.replace(/\s+/g,' ').trim();}
+  const out=[];for(let i=0;i<track.notes.length;i+=12)out.push(tabRows(track.notes.slice(i,i+12),false));return out.join('\n\n');
+}
+
+/* ---------- urutan chord ---------- */
+const progEl=$('#prog');let progSig='',progHL=-1;
+function rebuildProg(force){
+  const C=track?track.chords:[];const sig=C.length+'|'+(C.length?C[C.length-1].id:'')+'|'+TR;
+  if(!force&&sig===progSig)return;progSig=sig;progHL=-1;
+  const k=track&&track.key&&track.key.r>0.5&&C.length?` · kunci ${NOTE[((track.key.tonic+TR)%12+12)%12]}${track.key.minor?'m':''}`:'';
+  const b=song&&song.bpm?` · ±${song.bpm} BPM`:'';
+  $('#chordCount').textContent=C.length+' chord'+k+b;
+  if(!C.length){progEl.innerHTML='<p class="empty">Belum ada chord yang terbaca.</p>';return;}
+  progEl.innerHTML=C.map((c,i)=>`<button class="cc" type="button" data-i="${i}"><b>${chordLabel(c.id)}</b><small>${fmt(c.t0)}</small></button>`).join('');
+}
+function updateProgHL(info){const i=info&&info.cActive?info.ci:-1;if(i===progHL)return;progHL=i;
+  progEl.querySelectorAll('.cc.on').forEach(e=>e.classList.remove('on'));const b=i>=0?progEl.querySelector(`[data-i="${i}"]`):null;if(b)b.classList.add('on');}
+function copyChords(){if(!track||!track.chords.length)return '';const names=track.chords.map(c=>chordLabel(c.id)),lines=[];for(let i=0;i<names.length;i+=4)lines.push(names.slice(i,i+4).join(' | '));
+  return (CAPO&&INST==='gitar'?`Capo ${CAPO}\n`:'')+lines.join('\n');}
+
+/* ---------- MIDI ---------- */
+function midiBytes(){
+  const bpm=song&&song.bpm||120,PPQ=480,tk=t=>Math.max(0,Math.round(t*bpm/60*PPQ));
+  const vlq=n=>{const b=[n&0x7f];while(n>>=7)b.unshift((n&0x7f)|0x80);return b;};
+  const trk=evs=>{evs.sort((a,b)=>a.t-b.t||a.o-b.o);let last=0;const d=[];for(const e of evs){d.push(...vlq(e.t-last),...e.b);last=e.t;}d.push(0,0xff,0x2f,0);
+    return[0x4d,0x54,0x72,0x6b,(d.length>>>24)&255,(d.length>>>16)&255,(d.length>>>8)&255,d.length&255,...d];};
+  const name=s=>{const b=Array.from(new TextEncoder().encode(s));return[0xff,0x03,b.length,...b];};
+  const us=Math.round(60000000/bpm);
+  const t0=trk([{t:0,o:0,b:[0xff,0x51,3,(us>>16)&255,(us>>8)&255,us&255]},{t:0,o:1,b:[0xff,0x58,4,4,2,24,8]}]);
+  const mel=[{t:0,o:0,b:name('Melodi '+INST_NAME[INST])}],prog={bass:33,gitar:25,keys:0,vokal:52}[INST];mel.push({t:0,o:0,b:[0xc0,prog]});
+  for(const n of track.notes){const m=clamp(trNote(n.midi),0,127);mel.push({t:tk(n.t0),o:2,b:[0x90,m,96]},{t:tk(n.t1),o:1,b:[0x80,m,0]});}
+  const ch=[{t:0,o:0,b:name('Chord')},{t:0,o:0,b:[0xc1,4]}];
+  for(const c of track.chords){const T=TPL[c.id],r=48+((T.root+TR)%12+12)%12;for(const iv of T.iv){const m=r+iv;ch.push({t:tk(c.t0),o:2,b:[0x91,m,70]},{t:tk(c.t1),o:1,b:[0x81,m,0]});}}
+  const hdr=[0x4d,0x54,0x68,0x64,0,0,0,6,0,1,0,3,(PPQ>>8)&255,PPQ&255];
+  return new Uint8Array([...hdr,...t0,...trk(mel),...trk(ch)]);
+}
+
+/* ---------- transport ---------- */
+const scrub=$('#scrub');let scrubbing=false;
+function ui(){
+  const has=!!player.dur&&!live;
+  $('#playBtn').disabled=!has;$('#icPlay').hidden=player.playing;$('#icPause').hidden=!player.playing;
+  $('#playBtn').setAttribute('aria-label',player.playing?'Jeda':'Putar');
+  scrub.disabled=!track||!!live;
+  $$('#speeds .chip').forEach(c=>{c.disabled=!has;c.setAttribute('aria-pressed',String(+c.dataset.r===player.rate));});
+  for(const id of['setA','setB','loopBtn'])$('#'+id).disabled=!has;
+  $('#loopBtn').setAttribute('aria-pressed',String(loop.on));
+  $('#setA').textContent=loop.a!=null?'A '+fmt(loop.a):'A';$('#setB').textContent=loop.b!=null?'B '+fmt(loop.b):'B';
+  $('#micBtn').classList.toggle('on',!!live);$('#micLabel').textContent=live?'Stop mic':'Dengar dari mic';
+  $('#gateRow').hidden=!live;
+}
+function updateTransport(T){
+  const d=track?track.duration:(song?song.dur:0);
+  if(!scrubbing){scrub.max=Math.max(0.01,d).toFixed(2);scrub.value=Math.min(T,d).toFixed(2);}
+  const s=fmt(T)+' / '+fmt(d);const te=$('#time');if(te.textContent!==s)te.textContent=s;
+}
+function render(){
+  const T=currentT(),info=curInfo(T);
+  updateHero(info);drawRoll(T,info);
+  if(INST==='bass'||INST==='gitar')drawFret(info);else drawPiano(info);
+  updateTabHL(info);updateProgHL(info);updateTransport(T);
+}
+function rebuildAll(){tabSig='';progSig='';rebuildTab(true);rebuildProg(true);}
+
+/* ---------- ganti instrumen ---------- */
+function setInst(v,reanalyze){
+  INST=v;store.set('ns.inst',v);document.body.dataset.inst=v;readAccent();
+  $$('.inst').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.inst===v)));
+  const fr=v==='bass'||v==='gitar';
+  $('#tunField').hidden=!fr;$('#capoBox').hidden=v!=='gitar';
+  if(fr){const sel=$('#tuning'),T=TUNINGS[fretInst()];sel.innerHTML=Object.entries(T).map(([k,t])=>`<option value="${k}">${t.label}</option>`).join('');sel.value=tunSel[fretInst()];}
+  fret.hidden=!fr;piano.hidden=fr;
+  $('#viewTitle').textContent=fr?'Fretboard':'Keyboard';
+  $('#viewInfo').textContent=fr?'Atas = senar paling tinggi':'Geser ke samping kalau tidak muat';
+  $('#legend').innerHTML=fr?`<span><i class="ldot"></i>Nada sekarang</span><span><i class="lring"></i>Posisi lain, nadanya sama</span>${v==='gitar'?'<span><i class="lsq"></i>Bentuk chord yang bunyi</span>':''}`
+    :`<span><i class="ldot"></i>Nada sekarang</span><span><i class="lring"></i>Nada chord yang bunyi</span>`;
+  $('#cDiag').hidden=v!=='gitar';$('#cTones').hidden=!(v==='keys'||v==='vokal');
+  $('#tabTitle').textContent=v==='bass'?'TAB bass':v==='gitar'?'TAB melodi':'Not angka';
+  $('#tabNote').textContent=fr?'Angka dalam kurung, misalnya (3), artinya nadanya di luar jangkauan senar dan ditulis satu oktaf digeser.':'Titik di atas angka = oktaf lebih tinggi, titik di bawah = lebih rendah. Garis | = pergantian chord.';
+  $('#mixMinus').textContent='Minus one ('+INST_NAME[v]+')';$('#mixOnly').textContent='Hanya '+INST_NAME[v];
+  Object.keys(lastTxt).forEach(k=>delete lastTxt[k]);
+  renderMixer();
+  if(live){restartLiveForInst();}
+  else if(song&&reanalyze&&!busy){track=null;rebuildAll();render();analyzeCurrent(viewT);return;}
+  if(track){assignPos(track);computeRange(track);}
+  rebuildAll();ui();render();
+}
+
+/* ---------- mic ---------- */
+const gateVal=()=>{const v=+$('#gate').value/100;return 0.05*Math.pow(1-v,2)+0.0015;};
+async function startMic(){
+  if(busy)return;player.unload();msg('');
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){msg('Browser ini tidak memberi akses mikrofon di sini. Buka Ngulik Studio dari link GitHub Pages untuk mode mic.');ui();return;}
+  let stream;
+  try{ensureCtx();await ctx.resume();stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});}
+  catch(e){msg('Mikrofon diblok. Izinkan akses mic di browser, lalu coba lagi.');ui();return;}
+  song=null;$('#sepPanel').hidden=true;
+  const src=ctx.createMediaStreamSource(stream),an=ctx.createAnalyser();an.fftSize=16384;an.smoothingTimeConstant=0;src.connect(an);
+  live={stream,src,an,raw:new Float32Array(16384),wake:null};
+  try{if(navigator.wakeLock)navigator.wakeLock.request('screen').then(w=>{if(live)live.wake=w;else w.release();}).catch(()=>{});}catch(e){}
+  restartLiveForInst();kick();
+}
+function restartLiveForInst(){
+  if(!live)return;const sr=ctx.sampleRate,low=INST==='bass';
+  const f=Math.max(1,Math.round(sr/(low?11025:22050))),N=1024,f4=Math.max(1,Math.round(sr/11025));let CN=4096;while(CN*f4>16384)CN>>=1;
+  track={source:'mic',name:'Mic · live',frames:[],notes:[],chords:[],duration:0,key:null};
+  Object.assign(live,{f,x:new Float32Array(N),det:low?makeDetector(sr/f,N,27,460,0.3):makeDetector(sr/f,N),f4,CN,x4:new Float32Array(CN),sr4:sr/f4,
+    t0:ctx.currentTime,seg:makeSegmenter(track,gateVal),nCount:0,tickN:0,ema:new Float32Array(12),bema:new Float32Array(12),cand:null,curC:null,chAcc:new Float32Array(12)});
+  $('#srcName').textContent='Mic · live';rebuildAll();ui();
+}
+function processLive(){
+  const L=live;L.an.getFloatTimeDomainData(L.raw);
+  const RAW=L.raw.length,need=1024*L.f;
+  downsample(L.raw.subarray(RAW-need),L.f,need,L.x);
+  const r=L.det(L.x),t=ctx.currentTime-L.t0;
+  const fr={t,midi:r.rms<gateVal()?null:toMidi(r.f),rms:r.rms};
+  track.frames.push(fr);if(track.frames.length>9000)track.frames.splice(0,2000);
+  L.seg.feed(fr);track.duration=t;
+  $('#lvl').style.width=Math.min(100,Math.sqrt(r.rms)*220)+'%';
+  if(track.notes.length!==L.nCount||track.notes.length&&track.notes[track.notes.length-1]!==L.last){L.nCount=track.notes.length;L.last=track.notes[track.notes.length-1];assignPos(track);rebuildTab();}
+  if(++L.tickN%5===0){
+    const len=L.CN*L.f4;downsampleLP(L.raw.subarray(RAW-len),L.f4,len,L.x4);
+    const c=chromaOf(L.x4,L.sr4);
+    for(let i=0;i<12;i++){L.ema[i]=L.ema[i]*0.6+c.ch[i]*0.4;L.bema[i]=L.bema[i]*0.6+c.bass[i]*0.4;L.chAcc[i]+=c.ch[i];}
+    if(L.tickN%60===0){const k=estimateKey(L.chAcc);if(k.r>0.4)track.key=k;}
+    const id=c.rms<gateVal()*0.8?-1:matchChord(L.ema,L.bema).id;
+    if(L.curC&&L.curC.id===id){L.curC.t1=t;L.cand=null;}
+    else{if(L.cand&&L.cand.id===id)L.cand.n++;else L.cand={id,n:1,t0:t};
+      if(L.cand.n>=3){L.curC=null;if(id>=0){L.curC={t0:L.cand.t0,t1:t,id,name:chordName(id)};track.chords.push(L.curC);}L.cand=null;rebuildProg();}}
+  }
+}
+function stopMic(){
+  if(!live)return;const L=live;live=null;
+  try{L.stream.getTracks().forEach(t=>t.stop());L.src.disconnect();}catch(e){}
+  try{L.wake&&L.wake.release();}catch(e){}
+  L.seg.finish();assignPos(track);computeRange(track);viewT=track.duration;track.name='Rekaman mic · '+fmt(track.duration);
+  $('#srcName').textContent=track.name;rebuildAll();ui();render();
+}
+
+/* ---------- event ---------- */
+$$('.inst').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.inst!==INST)setInst(b.dataset.inst,true);}));
+$('#tuning').addEventListener('change',e=>{tunSel[fretInst()]=e.target.value;store.set('ns.tun.'+fretInst(),e.target.value);if(track){assignPos(track);if(track.source!=='mic')computeRange(track);}Object.keys(lastTxt).forEach(k=>delete lastTxt[k]);rebuildAll();render();});
+$('#micBtn').addEventListener('click',()=>{if(live)stopMic();else startMic();});
+$('#fileBtn').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('#file').click();}});
+$('#file').addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';loadFile(f);});
+$('#demoBtn').addEventListener('click',loadDemo);
+$$('[data-kind]').forEach(b=>b.addEventListener('click',()=>{askKind=b.dataset.kind;$$('[data-kind]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+  $('#methodBox').hidden=askKind!=='band';$('#sepGo').disabled=false;$('#sepGo').textContent=askKind==='band'?'Pisahkan & ulik':'Mulai ulik';}));
+$$('[data-method]').forEach(b=>b.addEventListener('click',()=>{askMethod=b.dataset.method;store.set('ns.method',askMethod);$$('[data-method]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));}));
+$('#sepGo').addEventListener('click',()=>{if(!song||busy)return;
+  if(askKind==='single'){song.kind='single';song.stems=null;song.cache={};showSingle();loadPlayback();analyzeCurrent(0);}
+  else if(askKind==='band')startSeparation(askMethod);});
+$('#toBand').addEventListener('click',()=>{showAsk();$('[data-kind="band"]').click();});
+$('#sepAgain').addEventListener('click',()=>{if(!busy)startSeparation('ai');});
+$('#mixer').addEventListener('click',e=>{const b=e.target.closest('.tg');if(!b)return;const k=b.closest('.mrow').dataset.k;mix[k][b.dataset.act]=!mix[k][b.dataset.act];mixChanged();});
+$('#mixer').addEventListener('input',e=>{if(e.target.dataset.act!=='vol')return;const k=e.target.closest('.mrow').dataset.k;mix[k].vol=+e.target.value/100;clearTimeout(mixTimer);mixTimer=setTimeout(()=>{renderMixer();loadPlayback();},300);});
+$('#mixAll').addEventListener('click',()=>{for(const k in mix)mix[k]={vol:1,mute:false,solo:false};mixChanged();});
+$('#mixMinus').addEventListener('click',()=>{for(const k in mix)mix[k]={vol:1,mute:k===INST_STEM[INST],solo:false};mixChanged();});
+$('#mixOnly').addEventListener('click',()=>{for(const k in mix)mix[k]={vol:1,mute:false,solo:k===INST_STEM[INST]};mixChanged();});
+$('#playBtn').addEventListener('click',()=>{if(player.playing)player.pause();else{player.seek(viewT>=player.dur-0.05?(loop.on&&loop.a!=null?loop.a:0):viewT);player.play();}});
+$$('#speeds .chip').forEach(c=>c.addEventListener('click',()=>{player.setRate(+c.dataset.r);ui();}));
+$('#setA').addEventListener('click',()=>{loop.a=currentT();if(loop.b!=null&&loop.b<=loop.a)loop.b=null;ui();render();});
+$('#setB').addEventListener('click',()=>{const t=currentT();if(loop.a==null||t<=loop.a+0.2){loop.a=Math.max(0,t-4);}loop.b=t;loop.on=true;ui();render();});
+$('#loopBtn').addEventListener('click',()=>{if(loop.a==null){loop.a=Math.max(0,currentT()-2);loop.b=loop.a+4;}if(loop.b==null)loop.b=loop.a+4;loop.on=!loop.on;ui();render();});
+scrub.addEventListener('input',()=>{scrubbing=true;viewT=+scrub.value;if(player.dur)player.seek(viewT);render();});
+scrub.addEventListener('change',()=>{scrubbing=false;});
+progEl.addEventListener('click',e=>{const b=e.target.closest('.cc');if(!b||!track||live)return;const c=track.chords[+b.dataset.i];if(!c)return;viewT=c.t0+0.02;if(player.dur)player.seek(viewT);render();});
+const relabel=()=>{Object.keys(lastTxt).forEach(k=>delete lastTxt[k]);assignPos(track);$('#trVal').textContent='Transpose '+(TR>0?'+':'')+TR;$('#capoVal').textContent=CAPO?'Capo '+CAPO:'Tanpa capo';rebuildAll();render();};
+$('#trUp').addEventListener('click',()=>{TR=Math.min(11,TR+1);relabel();});
+$('#trDown').addEventListener('click',()=>{TR=Math.max(-11,TR-1);relabel();});
+$('#capoUp').addEventListener('click',()=>{CAPO=Math.min(9,CAPO+1);relabel();});
+$('#capoDown').addEventListener('click',()=>{CAPO=Math.max(0,CAPO-1);relabel();});
+function copyBtn(id,getText,label){const b=$(id);b.addEventListener('click',()=>{const txt=getText();if(!txt){b.textContent='Masih kosong';setTimeout(()=>b.textContent=label,1400);return;}
+  const done=()=>{b.textContent='Tersalin';setTimeout(()=>b.textContent=label,1600);};const fail=()=>{b.textContent='Gagal menyalin';setTimeout(()=>b.textContent=label,1800);};
+  try{navigator.clipboard.writeText(txt).then(done,fail);}catch(e){fail();}});}
+copyBtn('#copyBtn',copyNotes,'Salin');copyBtn('#copyChord',copyChords,'Salin chord');
+$('#midiBtn').addEventListener('click',()=>{if(!track||!track.notes.length&&!track.chords.length){msg('Belum ada nada untuk diekspor.');return;}
+  const url=URL.createObjectURL(new Blob([midiBytes()],{type:'audio/midi'}));const a=document.createElement('a');a.href=url;a.download=(song?song.name.replace(/\.[^.]+$/,''):'ngulik')+'-'+INST_NAME[INST]+'.mid';
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);});
+$('#clearBtn').addEventListener('click',()=>{
+  if(live){restartLiveForInst();return;}
+  player.unload();song=null;track=null;viewT=0;$('#sepPanel').hidden=true;$('#srcName').textContent='—';rebuildAll();ui();render();});
+let drag=null;
+roll.addEventListener('pointerdown',e=>{if(live||!track)return;drag={x:e.clientX,t:viewT,was:player.playing};if(player.playing)player.pause();roll.setPointerCapture(e.pointerId);});
+roll.addEventListener('pointermove',e=>{if(!drag)return;viewT=clamp(drag.t-(e.clientX-drag.x)/ppsOf(roll._w),0,track.duration);render();});
+const endDrag=()=>{if(!drag)return;const was=drag.was;drag=null;if(player.dur){player.seek(viewT);if(was)player.play();}};
+roll.addEventListener('pointerup',endDrag);roll.addEventListener('pointercancel',endDrag);
+new ResizeObserver(()=>render()).observe(document.querySelector('.wrap'));
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&player.playing)player.pause();});
+
+setInst(INST,false);
+setTimeout(loadDemo,40);
+
+})();
+</script>
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});}
+</script>
+</body>
+</html>
