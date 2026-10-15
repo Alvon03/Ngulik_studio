@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b0b0f">
+<meta name="theme-color" content="#24262a">
 <meta name="description" content="Pisahkan instrumen, lalu ulik bass, gitar, keyboard, atau vokalnya.">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,261 +12,297 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);background:#0b0b0f}body{margin:0;overscroll-behavior-y:none}</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);background:#24262a}body{margin:0;overscroll-behavior-y:none}</style>
 </head>
 <body>
 <title>Ngulik Studio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Doto:wght@700;900&family=Martian+Mono:wght@400;600&family=Sofia+Sans+Condensed:ital,wght@0,500;0,600;0,700;0,800;1,800&family=Sofia+Sans:wght@400;500;700&display=swap">
 <style>
-/* Layout: satu kolom panggung. Pilih instrumen -> sumber lagu -> pemisah & mixer -> nada sekarang -> jejak nada -> tampilan instrumen -> chord -> TAB / not angka.
-   Satu tampilan gelap ala studio; warna aksen ikut instrumen yang dipilih. */
+/* Konsep: Ngulik Studio adalah meja studio kecil. Pilih kanal -> transport -> layar LCD tuner (chord & nada) -> layar jejak nada
+   -> mixer channel strip -> fretboard/keyboard -> lembar setlist kertas yang ditempel selotip (chord + TAB/not angka).
+   Warna instrumen = warna tutup fader: bass biru, gitar kuning, keyboard merah, vokal hijau. */
 :root{
   color-scheme: dark;
-  --ink:#0b0b0f;
-  --stage:#07070a;
-  --panel:#14141b;
-  --line:#262632;
-  --muted:#9d9cb1;
-  --fg:#f2f1f8;
-  --acc:#ffc15e;
-  --acc-ink:#2a1700;
-  --acc-rgb:255,193,94;
-  --c-drums:#b6f36b;--c-bass:#5ff3de;--c-other:#ffc15e;--c-vocals:#ff8fab;
-  --warn:#ff8a70;
-  --f-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
-  --f-body:'Instrument Sans',system-ui,-apple-system,sans-serif;
-  --f-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --body:#24262a;        /* bodi meja: grafit */
+  --plate:#303338;       /* panel */
+  --plate-hi:#3b3f45;
+  --groove:#1b1d20;      /* celah/slot */
+  --ink:#ece6d6;         /* sablon putih hangat */
+  --ink-dim:#a29d91;
+  --lcd:#b8c886;--lcd-hi:#c9d79b;--lcd-ink:#1e2711;--lcd-ghost:rgba(30,39,17,.13);
+  --paper:#eeebe2;--paper-ink:#22252b;--paper-rule:#cdd5e0;--tape:rgba(222,207,148,.82);
+  --c-bass:#4aa3df;--c-gitar:#f0b43c;--c-keys:#e5553f;--c-vokal:#78c267;--c-drum:#d8d6cf;
+  --acc:#f0b43c;--acc-ink:#1d1a12;--acc-rgb:240,180,60;
+  --warn:#ff9d7a;
+  --f-label:'Sofia Sans Condensed','Arial Narrow',sans-serif;
+  --f-body:'Sofia Sans',system-ui,-apple-system,sans-serif;
+  --f-lcd:'Doto','Courier New',monospace;
+  --f-tab:'Martian Mono',ui-monospace,Menlo,monospace;
 }
-body[data-inst="bass"]{--acc:#5ff3de;--acc-ink:#032621;--acc-rgb:95,243,222}
-body[data-inst="gitar"]{--acc:#ffc15e;--acc-ink:#2a1700;--acc-rgb:255,193,94}
-body[data-inst="keys"]{--acc:#b9a3ff;--acc-ink:#1b1240;--acc-rgb:185,163,255}
-body[data-inst="vokal"]{--acc:#ff8fab;--acc-ink:#3a0c1a;--acc-rgb:255,143,171}
-html,body{background:var(--ink);color:var(--fg)}
-body{font-family:var(--f-body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body[data-inst="bass"]{--acc:#4aa3df;--acc-rgb:74,163,223}
+body[data-inst="gitar"]{--acc:#f0b43c;--acc-rgb:240,180,60}
+body[data-inst="keys"]{--acc:#e5553f;--acc-rgb:229,85,63}
+body[data-inst="vokal"]{--acc:#78c267;--acc-rgb:120,194,103}
+html,body{background:var(--body);color:var(--ink)}
+body{font-family:var(--f-body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;
+  background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.012) 0 1px,transparent 1px 3px)}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 .vh{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;opacity:0}
 button,select,input,label{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 .wrap{max-width:980px;margin:0 auto;padding-inline:16px;padding-block:18px 44px;display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
 .wrap>*{min-width:0}
 
-.top{display:flex;align-items:center;gap:12px;min-width:0}
-.top svg{flex:none}
-h1{font-family:var(--f-display);font-weight:800;font-size:clamp(22px,4.2vw,30px);letter-spacing:-.025em;margin:0;line-height:1.05}
-.by{font:600 .42em var(--f-mono);letter-spacing:.08em;color:var(--acc);vertical-align:.35em;margin-left:.25em;white-space:nowrap}
-.sub{color:var(--muted);font-size:13px;margin:2px 0 0}
-.mark path,.mark circle{transition:stroke .3s,fill .3s}
+/* papan nama */
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:4px 2px 2px;border-bottom:1px solid #3a3d43}
+.brand{font:italic 800 clamp(30px,6.6vw,44px)/.9 var(--f-label);letter-spacing:-.01em;margin:0;color:var(--ink)}
+.brand .by{display:inline-block;font:500 .36em/1 var(--f-label);font-style:normal;color:var(--ink-dim);margin-left:.4em;letter-spacing:.02em;vertical-align:.4em}
+.topr{display:flex;align-items:flex-end;gap:12px}
+.model{font:600 13px/1.2 var(--f-label);color:var(--ink-dim);text-align:right;max-width:21ch;margin:0}
+.lang{height:32px;padding:0 28px 0 10px;font-size:14px;background-position:right 10px center}
 
-.insts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:5px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
-.inst{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px 8px;border:0;border-radius:13px;background:transparent;color:var(--muted);font:600 13px var(--f-body);cursor:pointer;transition:background .2s,color .2s}
+/* pilih kanal */
+.insts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.inst{position:relative;display:grid;justify-items:center;gap:6px;padding:12px 4px 10px;border:1px solid var(--groove);border-radius:7px;
+  background:linear-gradient(#3a3d43,#2e3136);box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 2px 0 #17181b;color:var(--ink-dim);
+  font:700 15px/1 var(--f-label);cursor:pointer;transition:transform .08s,box-shadow .08s}
 .inst svg{width:24px;height:24px}
-.inst[aria-selected="true"]{background:rgba(var(--acc-rgb),.14);color:var(--acc)}
-.inst:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.inst::before{content:"";width:22px;height:5px;border-radius:2px;background:var(--cap);opacity:.5}
+.inst[data-inst="bass"]{--cap:var(--c-bass)}.inst[data-inst="gitar"]{--cap:var(--c-gitar)}.inst[data-inst="keys"]{--cap:var(--c-keys)}.inst[data-inst="vokal"]{--cap:var(--c-vokal)}
+.inst[aria-selected="true"]{color:var(--ink);transform:translateY(2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 0 0 #17181b;background:linear-gradient(#34373d,#2b2e33)}
+.inst[aria-selected="true"]::before{opacity:1;box-shadow:0 0 9px var(--cap)}
 
+/* transport */
 .sources{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.field{display:flex;flex-direction:column;gap:4px;margin-left:auto}
-.field label,.eyebrow{font:600 10.5px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-select{appearance:none;-webkit-appearance:none;background:var(--panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239d9cb1'/%3E%3C/svg%3E") no-repeat right 12px center;color:var(--fg);border:1px solid var(--line);border-radius:10px;height:38px;padding:0 32px 0 12px;font:500 14px var(--f-body);max-width:100%}
-select:focus-visible,.btn:focus-visible,.chip:focus-visible,.cc:focus-visible,.opt:focus-visible,input[type=range]:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--fg);font:600 14px var(--f-body);cursor:pointer;transition:background .15s,border-color .15s,transform .1s;user-select:none;-webkit-user-select:none;white-space:nowrap}
-.btn:hover{border-color:#3a3a4a}
-.btn:active{transform:scale(.97)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 16px;border-radius:7px;border:1px solid var(--groove);
+  background:linear-gradient(#42464c,#36393f);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 2px 0 #16171a;color:var(--ink);
+  font:700 16px/1 var(--f-label);letter-spacing:.01em;cursor:pointer;user-select:none;-webkit-user-select:none;white-space:nowrap;transition:transform .07s,box-shadow .07s}
+.btn:active{transform:translateY(2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
 .btn svg{width:18px;height:18px;flex:none}
-.btn.primary{background:var(--acc);color:var(--acc-ink);border-color:transparent}
-.btn.primary.on{background:transparent;color:var(--acc);border-color:var(--acc);animation:breathe 1.6s ease-in-out infinite}
-.btn.sm{height:34px;padding:0 13px;font-size:13px}
+.btn.primary{background:linear-gradient(color-mix(in srgb,var(--acc) 92%,#fff),var(--acc));color:var(--acc-ink);border-color:color-mix(in srgb,var(--acc) 60%,#000)}
+.btn.on{color:var(--acc)}
+.btn.on::after{content:"";width:7px;height:7px;border-radius:50%;background:#ff4b3a;box-shadow:0 0 8px #ff4b3a;animation:rec 1.2s steps(2) infinite}
+@keyframes rec{50%{opacity:.25}}
+.btn.sm{height:36px;padding:0 13px;font-size:15px}
 .btn:disabled{opacity:.45;cursor:not-allowed}
-@keyframes breathe{50%{box-shadow:0 0 0 6px rgba(var(--acc-rgb),.13)}}
-.gate{display:flex;align-items:center;gap:10px;flex:1 1 100%}
+.field{display:flex;align-items:center;gap:8px;margin-left:auto}
+.field label{font:600 14px var(--f-label);color:var(--ink-dim)}
+select{appearance:none;-webkit-appearance:none;background:var(--groove) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23a29d91'/%3E%3C/svg%3E") no-repeat right 12px center;
+  color:var(--ink);border:1px solid #45484e;border-radius:6px;height:38px;padding:0 32px 0 12px;font:600 15px var(--f-label);max-width:100%}
+.gate{display:flex;align-items:center;gap:10px;flex:1 1 100%;font:600 14px var(--f-label);color:var(--ink-dim)}
 .gate input{flex:1}
-.lvl{width:56px;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
-.lvl i{display:block;height:100%;width:0;background:var(--acc);transition:width .06s}
-.msg{font-size:13px;color:var(--warn);margin:0}
+.lvl{width:64px;height:8px;border-radius:2px;background:var(--groove);overflow:hidden}
+.lvl i{display:block;height:100%;width:0;background:linear-gradient(90deg,#78c267 0 70%,#f0b43c 70% 88%,#e5553f 88%);transition:width .06s}
+.msg{font:500 14px/1.4 var(--f-body);color:var(--warn);margin:0}
 .msg:empty{display:none}
 
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:14px}
-.panel-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:2px 4px 10px}
-.panel-h h2{font:700 12px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0;flex:none}
-.panel-h span{font:500 12px var(--f-mono);color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* panel rak (dengan sekrup) */
+.rack{position:relative;background:linear-gradient(var(--plate-hi),var(--plate) 40px);border:1px solid var(--groove);border-radius:8px;padding:14px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 3px 0 #18191c}
+.rack.screws::before,.rack.screws::after{content:"";position:absolute;top:7px;width:7px;height:7px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#8d9096,#4b4e53 60%);box-shadow:inset 0 0 0 1px #222}
+.rack.screws::before{left:7px}.rack.screws::after{right:7px}
+.head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:0 6px 10px}
+.head h2{font:700 17px/1.1 var(--f-label);color:var(--ink);margin:0;flex:none}
+.head span{font:500 14px var(--f-label);color:var(--ink-dim);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-/* pemisah & mixer */
+/* pemisah: pertanyaan */
 .ask{display:grid;gap:12px}
-.ask h3{font:700 clamp(18px,3vw,21px)/1.2 var(--f-display);margin:0 4px;letter-spacing:-.01em}
+.ask h3{font:700 22px/1.15 var(--f-label);margin:0 6px}
 .opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
-.opt{display:grid;gap:3px;text-align:left;padding:13px 14px;border-radius:14px;border:1px solid var(--line);background:var(--stage);color:var(--fg);cursor:pointer;font:inherit}
-.opt b{font:700 15px var(--f-body)}
-.opt small{color:var(--muted);font-size:12.5px;line-height:1.4}
-.opt[aria-pressed="true"]{border-color:var(--acc);background:rgba(var(--acc-rgb),.08)}
-.opt .tag{justify-self:start;font:600 10px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--acc-ink);background:var(--acc);border-radius:5px;padding:2px 6px;margin-bottom:2px}
-.prog{display:grid;gap:8px;padding:6px 4px}
-.prog .bar{width:100%;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
-.prog .bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .2s}
-.prog span{font:500 12.5px var(--f-mono);color:var(--muted)}
-.mixer{display:grid;gap:6px}
-.mrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto minmax(70px,140px);align-items:center;gap:8px;padding:6px 8px;border-radius:12px;background:var(--stage)}
-.mrow .dot{width:10px;height:10px;border-radius:50%}
-.mrow b{font:600 14px var(--f-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mrow b small{color:var(--muted);font-weight:500;font-size:12px;margin-left:4px}
-.tg{width:34px;height:30px;border-radius:9px;border:1px solid var(--line);background:transparent;color:var(--muted);font:700 12px var(--f-mono);cursor:pointer}
-.tg[aria-pressed="true"].s{background:var(--acc);color:var(--acc-ink);border-color:transparent}
-.tg[aria-pressed="true"].m{background:#3a2430;color:var(--warn);border-color:transparent}
-.mrow.off b{opacity:.45}
-.mrow input{width:100%;min-width:0}
+.opt{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;text-align:left;padding:12px 14px;border-radius:7px;border:1px solid var(--groove);background:#2a2d31;color:var(--ink);cursor:pointer;font:inherit}
+.opt::before{content:"";grid-row:1/3;align-self:center;width:12px;height:12px;border-radius:50%;background:#1a1b1e;box-shadow:inset 0 1px 2px #000}
+.opt[aria-pressed="true"]::before{background:var(--acc);box-shadow:0 0 8px var(--acc)}
+.opt b{font:700 17px/1.2 var(--f-label)}
+.opt small{color:var(--ink-dim);font-size:13.5px;line-height:1.4}
+.opt .tag{font:700 12px var(--f-label);color:var(--acc);margin-left:6px}
+.methodLbl{font:600 15px var(--f-label);color:var(--ink-dim);margin:4px 6px 0}
+.prog{display:grid;gap:8px;padding:4px 6px}
+.prog .bar{width:100%;height:10px;border-radius:2px;background:var(--groove);overflow:hidden;box-shadow:inset 0 1px 2px #000}
+.prog .bar i{display:block;height:100%;width:0;background:repeating-linear-gradient(90deg,var(--acc) 0 6px,transparent 6px 8px);transition:width .2s}
+.prog span{font:500 14px var(--f-label);color:var(--ink-dim)}
+
+/* mixer: channel strip */
+.mixer{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.strip{display:grid;justify-items:center;gap:8px;padding:10px 4px 8px;border-radius:6px;background:#2a2d31;border:1px solid var(--groove)}
+.strip .sm{display:flex;gap:4px}
+.tg{width:32px;height:28px;border-radius:5px;border:1px solid var(--groove);background:linear-gradient(#45494f,#383b41);color:var(--ink-dim);font:800 13px var(--f-label);cursor:pointer;box-shadow:0 1px 0 #16171a}
+.tg[aria-pressed="true"].s{background:#e9cf5a;color:#2a2410}
+.tg[aria-pressed="true"].m{background:#d9533f;color:#fff}
+.fader{position:relative;width:46px;height:150px;cursor:ns-resize;touch-action:none}
+.fader .slot{position:absolute;left:50%;top:10px;bottom:10px;width:6px;margin-left:-3px;border-radius:3px;background:#121315;box-shadow:inset 0 1px 2px #000}
+.fader .ticks{position:absolute;left:4px;right:4px;top:10px;bottom:10px;background:repeating-linear-gradient(transparent 0 calc(10% - 1px),rgba(236,230,214,.18) calc(10% - 1px) 10%)}
+.fader .unity{position:absolute;left:0;right:0;height:1px;background:rgba(236,230,214,.5)}
+.fader .cap{position:absolute;left:50%;width:38px;height:22px;margin-left:-19px;margin-bottom:-11px;border-radius:4px;
+  background:linear-gradient(#f4f2ec 0 45%,var(--cap) 45% 55%,#d8d5cc 55%);box-shadow:0 3px 4px rgba(0,0,0,.55),inset 0 1px 0 #fff}
+.strip .name{font:700 15px/1.1 var(--f-label);color:var(--ink);text-align:center;padding:3px 6px;border-radius:3px;background:#eeebe2;color:#22252b;width:100%;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.strip .led{width:8px;height:8px;border-radius:50%;background:#3a2a26}
+.strip.on .led{background:var(--cap);box-shadow:0 0 7px var(--cap)}
+.strip.mine{border-color:color-mix(in srgb,var(--cap) 60%,#000)}
+.strip.mine .name{background:var(--cap);color:#16171a}
 .mixbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px}
-.badge{font:600 11px var(--f-mono);letter-spacing:.06em;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 9px}
+.badge{font:600 14px var(--f-label);color:var(--ink-dim);margin-right:auto;padding:0 4px}
 
-/* nada sekarang */
-.now{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px 26px;align-items:center;padding:18px 20px;border-radius:20px;border:1px solid var(--line);background:radial-gradient(120% 160% at 0% 0%,rgba(var(--acc-rgb),.12),transparent 55%),var(--panel)}
+/* layar LCD tuner */
+.lcdbox{padding:12px;border-radius:12px;background:linear-gradient(#2c2e33,#1f2124);border:1px solid #141517;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 3px 0 #141517}
+.lcd{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px 22px;align-items:center;padding:16px 18px;border-radius:6px;color:var(--lcd-ink);
+  background:radial-gradient(130% 120% at 30% 0%,var(--lcd-hi),var(--lcd) 60%,#a3b473);box-shadow:inset 0 2px 6px rgba(0,0,0,.45),inset 0 0 0 1px rgba(0,0,0,.25)}
+.lcd .ghost{color:var(--lcd-ghost)}
 .chordbox{display:flex;align-items:center;gap:14px;min-width:0}
-.cname{display:grid;gap:8px}
-.cname b{font-family:var(--f-display);font-weight:800;font-size:clamp(60px,14vw,104px);line-height:.82;letter-spacing:-.05em;color:var(--fg);text-shadow:0 0 30px rgba(var(--acc-rgb),.35);min-width:1.4ch}
-.cname small{font:500 12.5px var(--f-mono);color:var(--muted)}
-.chordbox.idle .cname b{color:#55546a;text-shadow:none}
-.diag{width:112px;height:136px;flex:none}
+.cname{display:grid;gap:4px;min-width:3.2ch}
+.cname b{font:900 clamp(58px,13vw,96px)/.85 var(--f-lcd);letter-spacing:-.02em}
+.cname small{font:600 14px var(--f-label)}
+.lcdlbl{font:700 13px/1 var(--f-label);opacity:.7}
+.chordbox.idle .cname b{color:var(--lcd-ghost)}
+.diag{width:104px;height:126px;flex:none}
 .diag svg{display:block;width:100%;height:100%}
-.chordbox.idle .diag{opacity:.35}
-.info{display:grid;gap:9px;min-width:0}
-.state{display:inline-flex;align-items:center;gap:6px;font:600 11px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--acc)}
-.state::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 10px currentColor}
-.info.idle .state{color:var(--muted)}
-.info.idle .state::before{box-shadow:none}
-.nline{display:flex;align-items:baseline;gap:10px;margin:0;min-width:0;flex-wrap:wrap}
-.nline b{font-family:var(--f-display);font-weight:800;font-size:clamp(34px,6vw,46px);line-height:1;letter-spacing:-.03em}
-.info.idle .nline b{color:#55546a}
-.nline .na{font-family:var(--f-display);font-weight:800;font-size:clamp(34px,6vw,46px);line-height:1;color:var(--acc)}
-.pos{font-family:var(--f-display);font-weight:700;font-size:clamp(17px,3vw,22px);letter-spacing:-.01em;line-height:1.15;margin:0;text-wrap:balance}
-.pos em{font-style:normal;color:var(--acc)}
-.pos small{font:500 12px var(--f-mono);color:var(--muted)}
-.alts,.hz{color:var(--muted);font-size:13px;margin:0}
-.hz{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
-.meter{position:relative;height:34px;max-width:360px;margin-top:6px}
-.meter .track{position:absolute;left:0;right:0;top:12px;height:4px;border-radius:2px;background:linear-gradient(90deg,rgba(255,138,112,.5),rgba(var(--acc-rgb),.55) 40%,rgba(var(--acc-rgb),.55) 60%,rgba(255,138,112,.5))}
-.meter .mid{position:absolute;left:50%;top:6px;width:2px;height:16px;margin-left:-1px;background:var(--fg);opacity:.5;border-radius:1px}
-.meter .needle{position:absolute;top:4px;left:50%;width:4px;height:20px;margin-left:-2px;border-radius:2px;background:var(--acc);box-shadow:0 0 12px var(--acc);transition:left .08s linear}
-.meter .needle.off{background:var(--warn);box-shadow:0 0 12px var(--warn)}
-.meter .scale{position:absolute;left:0;right:0;top:24px;display:flex;justify-content:space-between;font:500 10px var(--f-mono);color:var(--muted)}
-.meter .val{position:absolute;right:0;top:-14px;font:600 11px var(--f-mono);color:var(--fg);font-variant-numeric:tabular-nums}
-.dg-line{stroke:#5f5e72;stroke-width:1.4}
-.dg-nut{stroke:#eceaf4;stroke-width:4;stroke-linecap:round}
-.dg-dot{fill:var(--acc)}
-.dg-txt{fill:var(--muted);font:600 11px var(--f-mono)}
-.dg-mark{fill:none;stroke:var(--muted);stroke-width:1.6}
+.chordbox.idle .diag{opacity:.3}
+.dg-line{stroke:var(--lcd-ink);stroke-width:1.3;opacity:.7}
+.dg-nut{stroke:var(--lcd-ink);stroke-width:4;stroke-linecap:round}
+.dg-dot{fill:var(--lcd-ink)}
+.dg-txt{fill:var(--lcd-ink);font:700 12px var(--f-label)}
+.dg-mark{fill:none;stroke:var(--lcd-ink);stroke-width:1.6}
 .ctones{display:flex;gap:6px;flex-wrap:wrap}
-.ctones span{font:700 15px var(--f-mono);padding:5px 9px;border-radius:9px;background:rgba(var(--acc-rgb),.13);color:var(--acc)}
+.ctones span{font:900 22px var(--f-lcd);padding:2px 7px;border:2px solid var(--lcd-ink);border-radius:4px}
+.info{display:grid;gap:8px;min-width:0}
+.state{font:700 14px/1 var(--f-label);display:inline-flex;align-items:center;gap:7px}
+.state::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--lcd-ink)}
+.info.idle .state::before{background:var(--lcd-ghost)}
+.nline{display:flex;align-items:baseline;gap:12px;margin:0;flex-wrap:wrap}
+.nline b{font:900 clamp(36px,7vw,52px)/1 var(--f-lcd)}
+.info.idle .nline b{color:var(--lcd-ghost)}
+.hz{font:700 15px var(--f-label);font-variant-numeric:tabular-nums}
+.pos{font:700 clamp(18px,3vw,22px)/1.2 var(--f-label);margin:0;text-wrap:balance}
+.pos em{font-style:normal;background:var(--lcd-ink);color:var(--lcd);padding:0 5px;border-radius:2px}
+.pos small{font-weight:500;font-size:14px}
+.alts{font:500 14px/1.35 var(--f-label);margin:0;opacity:.8}
+.meter{position:relative;height:40px;max-width:380px;margin-top:2px}
+.meter .segs{position:absolute;left:0;right:0;top:6px;height:14px;background:repeating-linear-gradient(90deg,var(--lcd-ghost) 0 5px,transparent 5px 8px)}
+.meter .mid{position:absolute;left:50%;top:0;width:3px;height:26px;margin-left:-1.5px;background:var(--lcd-ink)}
+.meter .needle{position:absolute;top:2px;left:50%;width:5px;height:22px;margin-left:-2.5px;background:var(--lcd-ink);transition:left .08s linear}
+.meter .needle.off{animation:blink .5s steps(2) infinite}
+@keyframes blink{50%{opacity:.3}}
+.meter .scale{position:absolute;left:0;right:0;top:25px;display:flex;justify-content:space-between;font:700 12px var(--f-label)}
+.meter .val{position:absolute;right:0;top:-16px;font:700 13px var(--f-label);font-variant-numeric:tabular-nums}
 
-/* jejak nada */
-.roll-wrap{position:relative;border-radius:14px;overflow:hidden;background:var(--stage);touch-action:pan-y}
+/* layar jejak nada */
+.screen{position:relative;border-radius:6px;overflow:hidden;background:#15171a;box-shadow:inset 0 2px 8px #000;touch-action:pan-y}
 #roll{display:block;width:100%;height:280px;cursor:grab}
 #roll:active{cursor:grabbing}
-.overlay{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:10px;background:rgba(7,7,10,.8);color:var(--fg);font:600 13px var(--f-mono);text-align:center;padding:16px}
-.overlay .bar{width:180px;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
-.overlay .bar i{display:block;height:100%;width:0;background:var(--acc)}
-.transport{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}
-.play{width:46px;height:46px;border-radius:50%;padding:0;justify-content:center;background:var(--acc);color:var(--acc-ink);border:0}
-.play svg{width:20px;height:20px}
-.play:disabled{background:var(--line);color:var(--muted);cursor:not-allowed}
+.overlay{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:10px;background:rgba(21,23,26,.86);color:var(--ink);font:600 16px var(--f-label);text-align:center;padding:16px}
+.overlay .bar{width:200px;height:8px;border-radius:2px;background:#2b2e33;overflow:hidden}
+.overlay .bar i{display:block;height:100%;width:0;background:repeating-linear-gradient(90deg,var(--acc) 0 6px,transparent 6px 8px)}
+.transport{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px}
+.play{width:52px;height:46px;padding:0}
+.play svg{width:22px;height:22px}
 .scrub{flex:1;min-width:150px;display:flex;align-items:center;gap:10px}
 .scrub input{flex:1;min-width:0}
 input[type=range]{accent-color:var(--acc);height:28px}
-.time{font:500 12px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
-.seg{display:flex;gap:4px;padding:3px;border:1px solid var(--line);border-radius:999px}
-.chip{border:0;background:transparent;color:var(--muted);font:600 12px var(--f-mono);height:32px;padding:0 11px;border-radius:999px;cursor:pointer;white-space:nowrap}
-.chip[aria-pressed="true"]{background:var(--line);color:var(--fg)}
-.chip.loop[aria-pressed="true"]{background:var(--acc);color:var(--acc-ink)}
+.time{font:700 15px var(--f-label);color:var(--ink-dim);font-variant-numeric:tabular-nums;white-space:nowrap}
+.seg{display:flex;border:1px solid var(--groove);border-radius:7px;overflow:hidden;box-shadow:0 2px 0 #16171a}
+.chip{border:0;border-right:1px solid var(--groove);background:linear-gradient(#42464c,#36393f);color:var(--ink-dim);font:700 15px var(--f-label);height:38px;padding:0 12px;cursor:pointer;white-space:nowrap}
+.chip:last-child{border-right:0}
+.chip[aria-pressed="true"]{background:#26282c;color:var(--ink);box-shadow:inset 0 2px 3px #000}
+.chip.loop[aria-pressed="true"]{color:var(--acc)}
 .chip:disabled{opacity:.4;cursor:not-allowed}
 
-/* tampilan instrumen */
-.fb-scroll{overflow-x:auto;border-radius:14px}
+/* fretboard / keyboard */
+.fb-scroll{overflow-x:auto;border-radius:6px}
 #fret,#piano{display:block}
-.legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin:10px 4px 0;color:var(--muted);font-size:12.5px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin:10px 6px 0;color:var(--ink-dim);font:500 14px var(--f-label)}
 .legend span{display:inline-flex;align-items:center;gap:7px}
-.ldot{width:12px;height:12px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px var(--acc)}
-.lring{width:12px;height:12px;border-radius:50%;border:2px solid rgba(var(--acc-rgb),.6)}
-.lsq{width:12px;height:12px;border-radius:3px;border:2px solid rgba(242,241,248,.6)}
+.ldot{width:12px;height:12px;border-radius:50%;background:var(--acc)}
+.lring{width:12px;height:12px;border-radius:50%;border:2px solid var(--acc)}
+.lsq{width:12px;height:12px;border-radius:3px;border:2px solid var(--ink)}
 
-/* chord */
-.progr{display:flex;flex-wrap:wrap;gap:8px}
-.cc{display:grid;gap:1px;min-width:58px;padding:8px 12px 7px;border-radius:12px;border:1px solid var(--line);background:var(--stage);color:var(--fg);cursor:pointer;text-align:left;font:inherit}
-.cc b{font:800 19px/1.05 var(--f-display);letter-spacing:-.02em}
-.cc small{font:500 10.5px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
-.cc.on{border-color:var(--acc);background:rgba(var(--acc-rgb),.12);box-shadow:0 0 0 3px rgba(var(--acc-rgb),.12)}
-.cc.on b{color:var(--acc)}
-.empty{color:var(--muted);font-size:13.5px;margin:2px 4px}
-.stepper{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--line);border-radius:999px;padding:3px}
-.stepper button{width:32px;height:30px;border-radius:999px;border:0;background:transparent;color:var(--fg);font:700 16px var(--f-mono);cursor:pointer}
-.stepper button:hover{background:var(--line)}
-.stepper span{font:600 12px var(--f-mono);color:var(--muted);min-width:78px;text-align:center}
-
-/* TAB & not angka */
-.tab-box{position:relative;overflow-x:auto;background:var(--stage);border-radius:14px;padding:14px 14px 16px}
-#tab{margin:0;font:13px/1.6 var(--f-mono);color:#b5b4c8;white-space:pre}
-#tab span.on{color:var(--acc-ink);background:var(--acc);border-radius:3px;box-shadow:0 0 10px rgba(var(--acc-rgb),.5)}
-.tabnote{margin:8px 4px 0;color:var(--muted);font-size:12.5px}
-.notang{display:flex;flex-wrap:wrap;gap:4px 2px;padding:6px 2px 4px;font:600 21px/1 var(--f-mono)}
-.notang .n{position:relative;display:inline-flex;justify-content:center;min-width:1.25em;padding:12px 3px;border-radius:7px;color:var(--fg)}
+/* lembar setlist (kertas + selotip) */
+.sheet{position:relative;margin:10px 4px 6px;padding:22px 18px 16px;background:var(--paper);color:var(--paper-ink);border-radius:2px;
+  background-image:linear-gradient(transparent 31px,var(--paper-rule) 31px 32px);background-size:100% 32px;background-position:0 14px;
+  box-shadow:0 1px 0 #d6d1c3,0 8px 18px rgba(0,0,0,.35);transform:rotate(-.25deg)}
+.sheet::before,.sheet::after{content:"";position:absolute;top:-10px;width:78px;height:24px;background:var(--tape);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.sheet::before{left:18px;transform:rotate(-4deg)}
+.sheet::after{right:18px;transform:rotate(3deg)}
+.sheet + .sheet{transform:rotate(.2deg);margin-top:18px}
+.sheet h2{font:800 22px/1.1 var(--f-label);margin:0 0 2px}
+.sheet .sub{font:500 14px var(--f-label);color:#5a5d63;margin:0 0 12px}
+.progr{display:flex;flex-wrap:wrap;gap:4px 6px}
+.cc{display:grid;gap:0;min-width:52px;padding:4px 8px;border:0;border-radius:2px;background:transparent;color:var(--paper-ink);cursor:pointer;text-align:left;font:inherit}
+.cc b{font:800 25px/1.05 var(--f-label)}
+.cc small{font:500 12px var(--f-label);color:#6b6e74;font-variant-numeric:tabular-nums}
+.cc.on{background:linear-gradient(transparent 12%,rgba(var(--acc-rgb),.55) 12% 88%,transparent 88%)}
+.cc:hover{background:rgba(0,0,0,.05)}
+.note{color:var(--ink-dim);font:500 15px var(--f-label);margin:2px 6px 10px}
+.empty{color:#6b6e74;font:500 15px var(--f-label);margin:2px}
+.sheet .transport{margin-top:14px}
+.sheet .btn{background:#e2ded2;color:var(--paper-ink);border-color:#c8c3b4;box-shadow:0 1px 0 #bdb7a7}
+.stepper{display:inline-flex;align-items:center;border:1px solid #c8c3b4;border-radius:7px;background:#e2ded2;overflow:hidden}
+.stepper button{width:36px;height:36px;border:0;background:transparent;color:var(--paper-ink);font:800 20px var(--f-label);cursor:pointer}
+.stepper button:hover{background:#d6d1c3}
+.stepper span{font:700 15px var(--f-label);min-width:96px;text-align:center}
+.tab-box{overflow-x:auto;padding:4px 0 8px}
+#tab{margin:0;font:400 13px/1.7 var(--f-tab);color:var(--paper-ink);white-space:pre}
+#tab span.on{background:rgba(var(--acc-rgb),.6);border-radius:2px}
+.tabnote{margin:8px 0 0;color:#5a5d63;font:500 14px/1.4 var(--f-label)}
+.notang{display:flex;flex-wrap:wrap;gap:6px 2px;padding:4px 0;font:700 24px/1 var(--f-label)}
+.notang .n{position:relative;display:inline-flex;justify-content:center;min-width:1.2em;padding:12px 3px;border-radius:2px}
 .notang .n.hi::before,.notang .n.lo::after,.notang .n.hi2::before{content:"";position:absolute;left:50%;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:currentColor}
 .notang .n.hi::before{top:3px}
 .notang .n.hi2::before{top:3px;box-shadow:0 -6px 0 currentColor}
 .notang .n.lo::after{bottom:3px}
-.notang .n.on{background:var(--acc);color:var(--acc-ink)}
-.notang .sep{color:#4a4a5c;padding:12px 4px}
-.notang .ch{font:700 11px var(--f-mono);color:var(--acc);align-self:flex-start;padding:0 4px 0 8px}
+.notang .n.on{background:linear-gradient(transparent 15%,rgba(var(--acc-rgb),.6) 15% 85%,transparent 85%)}
+.notang .sep{color:#8a8d93;padding:12px 4px}
+.notang .ch{font:800 14px var(--f-label);color:#5a5d63;align-self:flex-start;padding:0 2px 0 8px}
 
-.export{display:flex;flex-wrap:wrap;gap:8px}
-.tips{display:grid;gap:8px;margin:0;padding:0 4px;list-style:none;color:var(--muted);font-size:13.5px;max-width:72ch}
-.tips li{display:flex;gap:10px}
-.tips li::before{content:"";flex:none;width:6px;height:6px;margin-top:8px;border-radius:50%;background:var(--acc);opacity:.7}
-.tips b{color:var(--fg);font-weight:600}
-.ver{margin:4px 4px 0;font:500 11px var(--f-mono);color:#5d5c70;letter-spacing:.06em}
+.tips{display:grid;gap:8px;margin:4px 0 0;padding:0 6px;list-style:none;color:var(--ink-dim);font:500 15px/1.45 var(--f-body);max-width:68ch}
+.tips b{color:var(--ink);font-weight:700}
+.ver{margin:2px 6px 0;font:600 13px var(--f-label);color:#73766f}
 
 @media (max-width:620px){
-  .now{grid-template-columns:minmax(0,1fr);padding:16px}
+  .lcd{grid-template-columns:minmax(0,1fr);padding:14px}
   #roll{height:250px}
-  .diag{width:100px;height:122px}
+  .diag{width:96px;height:116px}
   .field{margin-left:0;flex:1 1 100%}
-  .mrow{grid-template-columns:auto minmax(0,1fr) auto auto;row-gap:2px}
-  .mrow input{grid-column:2/-1}
+  .field select{flex:1}
+  .model{display:none}
+  .fader{height:130px}
+  .strip .name{font-size:13px;padding:3px 3px}
 }
 @media (prefers-reduced-motion:reduce){
-  .btn.primary.on{animation:none}
+  .btn.on::after,.meter .needle.off{animation:none}
   .meter .needle,.lvl i,.prog .bar i{transition:none}
 }
 </style>
 
 <div class="wrap">
   <header class="top">
-    <svg class="mark" width="42" height="42" viewBox="0 0 40 40" aria-hidden="true">
-      <rect width="40" height="40" rx="11" fill="#14141b" stroke="#262632"/>
-      <path d="M6 24h6v-8h6v12h5v-6h5v-10h6" fill="none" stroke="var(--acc)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
-      <circle cx="12" cy="16" r="2.6" fill="var(--acc)"/><circle cx="23" cy="22" r="2.6" fill="var(--acc)"/><circle cx="28" cy="12" r="2.6" fill="var(--acc)"/>
-    </svg>
-    <div>
-      <h1>Ngulik Studio <span class="by">by Alvon</span></h1>
-      <p class="sub">Pisahkan instrumen, lalu ulik bass, gitar, keyboard, atau vokalnya.</p>
-    </div>
+    <h1 class="brand">Ngulik Studio<span class="by">by Alvon</span></h1>
+    <div class="topr"><p class="model" data-i18n="tagline">Meja ulik empat kanal dengan pemisah instrumen</p>
+      <select id="lang" class="lang" data-i18n-aria="langAria" aria-label="Bahasa"></select></div>
   </header>
 
-  <nav class="insts" role="tablist" aria-label="Pilih instrumen yang mau diulik">
+  <nav class="insts" role="tablist" data-i18n-aria="instsAria" aria-label="Pilih instrumen yang mau diulik">
     <button class="inst" role="tab" data-inst="bass" aria-selected="false">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 3.5l6 6M17.5 6.5l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M9.5 14.5c-1.6-1.6-4.6-1.2-5.6.8-1 2 .2 3.4 1.2 4.4s2.4 2.2 4.4 1.2c2-1 2.4-4 .8-5.6" fill="currentColor"/><circle cx="7.4" cy="17.6" r="1" fill="var(--panel)"/></svg>
-      Bass</button>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 3.5l6 6M17.5 6.5l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M9.5 14.5c-1.6-1.6-4.6-1.2-5.6.8-1 2 .2 3.4 1.2 4.4s2.4 2.2 4.4 1.2c2-1 2.4-4 .8-5.6" fill="currentColor"/><circle cx="7.4" cy="17.6" r="1" fill="var(--plate)"/></svg>
+      <span data-i18n="inst.bass">Bass</span></button>
     <button class="inst" role="tab" data-inst="gitar" aria-selected="false">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3l6 6M18 6l-6.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M11.8 12.2c-.8-1.3-2.6-1.6-3.6-.6-.5.5-.6 1.2-1.4 1.4-1.5.3-3.4.6-3.8 2.6-.5 2.6 2.7 5.8 5.3 5.3 2-.4 2.3-2.3 2.6-3.8.2-.8.9-.9 1.4-1.4 1-1 .7-2.8-.5-3.5z" fill="currentColor"/><circle cx="8.2" cy="15.8" r="1.3" fill="var(--panel)"/></svg>
-      Gitar</button>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3l6 6M18 6l-6.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M11.8 12.2c-.8-1.3-2.6-1.6-3.6-.6-.5.5-.6 1.2-1.4 1.4-1.5.3-3.4.6-3.8 2.6-.5 2.6 2.7 5.8 5.3 5.3 2-.4 2.3-2.3 2.6-3.8.2-.8.9-.9 1.4-1.4 1-1 .7-2.8-.5-3.5z" fill="currentColor"/><circle cx="8.2" cy="15.8" r="1.3" fill="var(--plate)"/></svg>
+      <span data-i18n="inst.gitar">Gitar</span></button>
     <button class="inst" role="tab" data-inst="keys" aria-selected="false">
       <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7.5 5v14M12 5v14M16.5 5v14" stroke="currentColor" stroke-width="1.6"/><path d="M6 5h3v7H6zM10.5 5h3v7h-3zM15 5h3v7h-3z" fill="currentColor"/></svg>
-      Keyboard</button>
+      <span data-i18n="inst.keys">Keyboard</span></button>
     <button class="inst" role="tab" data-inst="vokal" aria-selected="false">
       <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4M8.5 21h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      Vokal</button>
+      <span data-i18n="inst.vokal">Vokal</span></button>
   </nav>
 
   <div class="sources">
     <label class="btn primary" id="fileBtn" for="file" role="button" tabindex="0">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Upload lagu / rekaman
+      <span data-i18n="upload">Upload lagu</span>
     </label>
     <button class="btn" id="micBtn" type="button">
       <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4M8.5 21h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -274,136 +310,135 @@ input[type=range]{accent-color:var(--acc);height:28px}
     </button>
     <button class="btn" id="demoBtn" type="button">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V6l10-2v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="2.5" fill="currentColor"/><circle cx="16.5" cy="16" r="2.5" fill="currentColor"/></svg>
-      Lagu demo
+      <span data-i18n="demo">Lagu demo</span>
     </button>
-    <input type="file" id="file" class="vh" aria-label="Pilih file lagu atau rekaman">
+    <input type="file" id="file" class="vh" data-i18n-aria="fileAria" aria-label="Pilih file lagu atau rekaman">
     <div class="field" id="tunField">
-      <label for="tuning">Stem senar</label>
+      <label for="tuning" data-i18n="tuning">Stem senar</label>
       <select id="tuning"></select>
     </div>
     <div class="gate" id="gateRow" hidden>
-      <label class="eyebrow" for="gate">Sensitivitas</label>
+      <label for="gate" data-i18n="gate">Sensitivitas mic</label>
       <input type="range" id="gate" min="1" max="100" value="70">
       <div class="lvl" aria-hidden="true"><i id="lvl"></i></div>
     </div>
   </div>
   <p class="msg" id="msg" role="status"></p>
 
-  <section class="panel" id="sepPanel" hidden>
-    <div class="panel-h"><h2>Pemisah instrumen</h2><span id="sepName">—</span></div>
+  <section class="rack screws" id="sepPanel" hidden>
+    <div class="head"><h2 data-i18n="sepTitle">Pemisah instrumen</h2><span id="sepName">–</span></div>
     <div id="sepAsk" class="ask" hidden>
-      <h3>Ini rekaman apa?</h3>
-      <div class="opts" role="group" aria-label="Jenis rekaman">
-        <button class="opt" type="button" data-kind="single" aria-pressed="false"><b>Satu instrumen</b><small>Rekaman kamu main sendiri, atau track yang sudah terpisah. Langsung diulik.</small></button>
-        <button class="opt" type="button" data-kind="band" aria-pressed="false"><b>Lagu full band</b><small>Dipisah dulu jadi drum, bass, gitar/keys, dan vokal supaya nadanya tidak tercampur.</small></button>
+      <h3 data-i18n="askTitle">Ini rekaman apa?</h3>
+      <div class="opts" role="group" data-i18n-aria="kindAria" aria-label="Jenis rekaman">
+        <button class="opt" type="button" data-kind="single" aria-pressed="false"><b data-i18n="singleT">Satu instrumen</b><small data-i18n="singleD"></small></button>
+        <button class="opt" type="button" data-kind="band" aria-pressed="false"><b data-i18n="bandT">Lagu full band</b><small data-i18n="bandD"></small></button>
       </div>
       <div id="methodBox" hidden>
-        <p class="eyebrow" style="margin:6px 4px 8px">Cara memisahkan</p>
-        <div class="opts" role="group" aria-label="Cara memisahkan">
-          <button class="opt" type="button" data-method="dsp" aria-pressed="false"><b>Cepat</b><small>Jalan di semua HP, sekitar 1 menit untuk lagu 4 menit. Hasil cukup untuk bass dan suasana lagu.</small></button>
-          <button class="opt" type="button" data-method="ai" aria-pressed="false"><span class="tag">Paling bersih</span><b>AI Demucs</b><small>Unduh model ±170 MB sekali saja. Prosesnya kira-kira 2× durasi lagu di laptop/PC dengan Chrome atau Edge terbaru; di HP bisa jauh lebih lama.</small></button>
+        <p class="methodLbl" data-i18n="methodLbl">Cara memisahkan</p>
+        <div class="opts" role="group" data-i18n-aria="methodLbl" aria-label="Cara memisahkan">
+          <button class="opt" type="button" data-method="dsp" aria-pressed="false"><b data-i18n="dspT">Cepat</b><small data-i18n="dspD"></small></button>
+          <button class="opt" type="button" data-method="ai" aria-pressed="false"><b><span data-i18n="aiT">AI Demucs</span> <span class="tag" data-i18n="aiTag">paling bersih</span></b><small data-i18n="aiD"></small></button>
         </div>
       </div>
       <div class="transport" style="margin-top:2px"><button class="btn primary" id="sepGo" type="button" disabled>Mulai ulik</button></div>
     </div>
-    <div id="sepBusy" class="prog" hidden><div class="bar"><i id="sepBar"></i></div><span id="sepText">Menyiapkan…</span></div>
+    <div id="sepBusy" class="prog" hidden><div class="bar"><i id="sepBar"></i></div><span id="sepText" data-i18n="preparing">Menyiapkan…</span></div>
     <div id="sepMix" hidden>
       <div class="mixer" id="mixer"></div>
       <div class="mixbar">
-        <span class="badge" id="sepBadge">—</span>
-        <button class="btn sm" id="mixAll" type="button">Semua bunyi</button>
+        <span class="badge" id="sepBadge">–</span>
+        <button class="btn sm" id="mixAll" type="button" data-i18n="mixAll">Semua bunyi</button>
         <button class="btn sm" id="mixMinus" type="button">Minus one</button>
         <button class="btn sm" id="mixOnly" type="button">Hanya ini</button>
-        <button class="btn sm" id="sepAgain" type="button">Pisah ulang pakai AI</button>
+        <button class="btn sm" id="sepAgain" type="button" data-i18n="sepAgain">Pisah ulang pakai AI</button>
       </div>
     </div>
     <div id="sepSingle" hidden>
-      <p class="empty" style="margin-bottom:10px">Rekaman satu instrumen, langsung diulik tanpa dipisah.</p>
-      <button class="btn sm" id="toBand" type="button">Ini lagu full band? Pisahkan</button>
+      <p class="note" data-i18n="singleNote"></p>
+      <button class="btn sm" id="toBand" type="button" data-i18n="toBand">Ini lagu full band? Pisahkan</button>
     </div>
   </section>
 
-  <section class="now" aria-live="polite">
-    <div class="chordbox idle" id="chordbox">
-      <div class="cname"><span class="eyebrow">Chord</span><b id="cName">–</b><small id="cSub"></small></div>
-      <div class="diag" id="cDiag" aria-label="Diagram jari chord"></div>
-      <div class="ctones" id="cTones" hidden></div>
-    </div>
-    <div class="info idle" id="info">
-      <span class="state" id="state">Siap</span>
-      <p class="nline"><b id="nName">–</b><span class="hz" id="hz">— Hz</span></p>
-      <p class="pos" id="pos">Pilih instrumen, lalu upload lagu atau putar demo</p>
-      <div class="meter" aria-hidden="true">
-        <div class="track"></div><div class="mid"></div><div class="needle" id="needle"></div>
-        <div class="val" id="cents">0 cent</div>
-        <div class="scale"><span>−50</span><span>pas</span><span>+50</span></div>
+  <section class="lcdbox" aria-live="polite">
+    <div class="lcd">
+      <div class="chordbox idle" id="chordbox">
+        <div class="cname"><span class="lcdlbl" data-i18n="chordLbl">Chord</span><b id="cName">–</b><small id="cSub"></small></div>
+        <div class="diag" id="cDiag" data-i18n-aria="diagAria" aria-label="Diagram jari chord"></div>
+        <div class="ctones" id="cTones" hidden></div>
       </div>
-      <p class="alts" id="alts"></p>
+      <div class="info idle" id="info">
+        <span class="state" id="state">Siap</span>
+        <p class="nline"><b id="nName">–</b><span class="hz" id="hz">– Hz</span></p>
+        <p class="pos" id="pos">Pilih instrumen, lalu upload lagu atau putar demo</p>
+        <div class="meter" aria-hidden="true">
+          <div class="segs"></div><div class="mid"></div><div class="needle" id="needle"></div>
+          <div class="val" id="cents">0 cent</div>
+          <div class="scale"><span>−50</span><span data-i18n="inTune">pas</span><span>+50</span></div>
+        </div>
+        <p class="alts" id="alts"></p>
+      </div>
     </div>
   </section>
 
-  <section class="panel">
-    <div class="panel-h"><h2>Jejak nada &amp; chord</h2><span id="srcName">—</span></div>
-    <div class="roll-wrap">
-      <canvas id="roll" aria-label="Lajur chord di atas, garis nada naik turun di bawah"></canvas>
-      <div class="overlay" id="overlay" hidden><span id="ovText">Menyiapkan…</span><div class="bar"><i id="ovBar"></i></div></div>
+  <section class="rack screws">
+    <div class="head"><h2 data-i18n="rollTitle">Jejak nada dan chord</h2><span id="srcName">–</span></div>
+    <div class="screen">
+      <canvas id="roll" data-i18n-aria="rollAria" aria-label="Lajur chord di atas, garis nada naik turun di bawah"></canvas>
+      <div class="overlay" id="overlay" hidden><span id="ovText" data-i18n="preparing">Menyiapkan…</span><div class="bar"><i id="ovBar"></i></div></div>
     </div>
     <div class="transport">
-      <button class="btn play" id="playBtn" type="button" aria-label="Putar" disabled>
+      <button class="btn play primary" id="playBtn" type="button" aria-label="Putar" disabled>
         <svg id="icPlay" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
         <svg id="icPause" viewBox="0 0 24 24" aria-hidden="true" hidden><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/></svg>
       </button>
       <div class="scrub">
-        <input type="range" id="scrub" min="0" max="1" step="0.01" value="0" aria-label="Posisi waktu">
+        <input type="range" id="scrub" min="0" max="1" step="0.01" value="0" data-i18n-aria="scrubAria" aria-label="Posisi waktu">
         <span class="time" id="time">0:00 / 0:00</span>
       </div>
-      <div class="seg" role="group" aria-label="Kecepatan putar" id="speeds">
+      <div class="seg" role="group" data-i18n-aria="speedAria" aria-label="Kecepatan putar" id="speeds">
         <button class="chip" type="button" data-r="0.5" aria-pressed="false">0.5×</button>
         <button class="chip" type="button" data-r="0.75" aria-pressed="false">0.75×</button>
         <button class="chip" type="button" data-r="1" aria-pressed="true">1×</button>
       </div>
-      <div class="seg" role="group" aria-label="Ulang bagian">
+      <div class="seg" role="group" data-i18n-aria="loopAria" aria-label="Ulang bagian">
         <button class="chip" type="button" id="setA">A</button>
         <button class="chip" type="button" id="setB">B</button>
-        <button class="chip loop" type="button" id="loopBtn" aria-pressed="false">Ulang A–B</button>
+        <button class="chip loop" type="button" id="loopBtn" aria-pressed="false" data-i18n="loop">Ulang A–B</button>
       </div>
     </div>
   </section>
 
-  <section class="panel">
-    <div class="panel-h"><h2 id="viewTitle">Fretboard</h2><span id="viewInfo">Atas = senar paling tinggi</span></div>
-    <div class="fb-scroll" id="fbScroll"><canvas id="fret" aria-label="Fretboard dengan posisi nada"></canvas><canvas id="piano" aria-label="Keyboard piano dengan nada yang menyala" hidden></canvas></div>
+  <section class="rack screws">
+    <div class="head"><h2 id="viewTitle">Fretboard</h2><span id="viewInfo">Atas = senar paling tinggi</span></div>
+    <div class="fb-scroll" id="fbScroll"><canvas id="fret" data-i18n-aria="fretAria" aria-label="Fretboard dengan posisi nada"></canvas><canvas id="piano" data-i18n-aria="pianoAria" aria-label="Keyboard piano dengan nada yang menyala" hidden></canvas></div>
     <div class="legend" id="legend"></div>
   </section>
 
-  <section class="panel">
-    <div class="panel-h"><h2>Urutan chord</h2><span id="chordCount">0 chord</span></div>
+  <section class="sheet">
+    <h2 data-i18n="progT">Urutan chord</h2>
+    <p class="sub" id="chordCount">0 chord</p>
     <div class="progr" id="prog"></div>
     <div class="transport">
-      <div class="stepper" aria-label="Transpose"><button type="button" id="trDown" aria-label="Turunkan setengah nada">−</button><span id="trVal">Transpose 0</span><button type="button" id="trUp" aria-label="Naikkan setengah nada">+</button></div>
-      <div class="stepper" id="capoBox" aria-label="Capo"><button type="button" id="capoDown" aria-label="Kurangi capo">−</button><span id="capoVal">Tanpa capo</span><button type="button" id="capoUp" aria-label="Tambah capo">+</button></div>
-      <button class="btn sm" id="copyChord" type="button">Salin chord</button>
+      <div class="stepper" data-i18n-aria="trAria" aria-label="Transpose"><button type="button" id="trDown" data-i18n-aria="trDown" aria-label="Turunkan setengah nada">−</button><span id="trVal">Transpose 0</span><button type="button" id="trUp" data-i18n-aria="trUp" aria-label="Naikkan setengah nada">+</button></div>
+      <div class="stepper" id="capoBox" data-i18n-aria="capoAria" aria-label="Capo"><button type="button" id="capoDown" data-i18n-aria="capoDown" aria-label="Kurangi capo">−</button><span id="capoVal">Tanpa capo</span><button type="button" id="capoUp" data-i18n-aria="capoUp" aria-label="Tambah capo">+</button></div>
+      <button class="btn sm" id="copyChord" type="button" data-i18n="copyChord">Salin chord</button>
     </div>
   </section>
 
-  <section class="panel" id="tabPanel">
-    <div class="panel-h"><h2 id="tabTitle">TAB</h2><span id="tabCount">0 nada</span></div>
+  <section class="sheet" id="tabPanel">
+    <h2 id="tabTitle">TAB</h2>
+    <p class="sub" id="tabCount">0 nada</p>
     <div class="tab-box" id="tabBox"><pre id="tab"></pre><div class="notang" id="notang" hidden></div></div>
     <p class="tabnote" id="tabNote"></p>
     <div class="transport">
-      <button class="btn sm" id="copyBtn" type="button">Salin</button>
-      <button class="btn sm" id="midiBtn" type="button">Unduh MIDI</button>
-      <button class="btn sm" id="clearBtn" type="button">Bersihkan</button>
+      <button class="btn sm" id="copyBtn" type="button" data-i18n="copy">Salin</button>
+      <button class="btn sm" id="midiBtn" type="button" data-i18n="midi">Unduh MIDI</button>
+      <button class="btn sm" id="clearBtn" type="button" data-i18n="clear">Bersihkan</button>
     </div>
   </section>
 
-  <ul class="tips">
-    <li><span><b>Lagu full band:</b> pilih "Lagu full band" supaya instrumen dipisah dulu. Mode AI jauh lebih bersih, terutama untuk vokal dan bass.</span></li>
-    <li><span><b>Minus one:</b> matikan instrumen yang sedang kamu ulik di mixer, lalu mainkan bagianmu bareng lagunya.</span></li>
-    <li><span><b>Bagian susah:</b> tandai A dan B, nyalakan "Ulang A–B", lalu putar 0.5×.</span></li>
-    <li><span><b>Capo &amp; transpose:</b> geser kunci lagu supaya pas dengan suaramu, atau pakai capo supaya bentuk chord lebih gampang.</span></li>
-  </ul>
-  <p class="ver" id="ver">Ngulik Studio by Alvon · versi 2.1</p>
+  <ul class="tips" data-i18n-html="tips"></ul>
+  <p class="ver" id="ver"></p>
 </div>
 
 <script>
@@ -416,15 +451,15 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const fmt=t=>{t=Math.max(0,t||0);const m=Math.floor(t/60),s=Math.floor(t%60);return m+':'+String(s).padStart(2,'0');};
 const TUNINGS={
   bass:{
-    std4:{label:'4 senar · E A D G',strings:[28,33,38,43],names:['E','A','D','G'],shift:0},
-    five:{label:'5 senar · B E A D G',strings:[23,28,33,38,43],names:['B','E','A','D','G'],shift:0},
-    dropD:{label:'Drop D · D A D G',strings:[26,33,38,43],names:['D','A','D','G'],shift:0},
-    half:{label:'Turun ½ · Eb Ab Db Gb',strings:[27,32,37,42],names:['Eb','Ab','Db','Gb'],shift:1}},
+    std4:{label:'4 senar (E A D G)',strings:[28,33,38,43],names:['E','A','D','G'],shift:0},
+    five:{label:'5 senar (B E A D G)',strings:[23,28,33,38,43],names:['B','E','A','D','G'],shift:0},
+    dropD:{label:'Drop D (D A D G)',strings:[26,33,38,43],names:['D','A','D','G'],shift:0},
+    half:{label:'Turun ½ (Eb Ab Db Gb)',strings:[27,32,37,42],names:['Eb','Ab','Db','Gb'],shift:1}},
   gitar:{
-    std:{label:'Standar · E A D G B E',strings:[40,45,50,55,59,64],names:['E','A','D','G','B','e'],shift:0},
-    dropD:{label:'Drop D · D A D G B E',strings:[38,45,50,55,59,64],names:['D','A','D','G','B','e'],shift:0,drop:true},
-    half:{label:'Turun ½ · Eb Ab Db Gb Bb Eb',strings:[39,44,49,54,58,63],names:['Eb','Ab','Db','Gb','Bb','eb'],shift:1},
-    whole:{label:'Turun 1 · D G C F A D',strings:[38,43,48,53,57,62],names:['D','G','C','F','A','d'],shift:2}}
+    std:{label:'Standar (E A D G B E)',strings:[40,45,50,55,59,64],names:['E','A','D','G','B','e'],shift:0},
+    dropD:{label:'Drop D (D A D G B E)',strings:[38,45,50,55,59,64],names:['D','A','D','G','B','e'],shift:0,drop:true},
+    half:{label:'Turun ½ (Eb Ab Db Gb Bb Eb)',strings:[39,44,49,54,58,63],names:['Eb','Ab','Db','Gb','Bb','eb'],shift:1},
+    whole:{label:'Turun 1 (D G C F A D)',strings:[38,43,48,53,57,62],names:['D','G','C','F','A','d'],shift:2}}
 };
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 let INST='gitar';
@@ -1018,6 +1053,242 @@ async function analyzeLow(samples,sr,len,name,source,onP){
 }
 
 
+const APP_VER="2.3";
+/* ================= Ngulik Studio: bahasa ================= */
+const LANG_NAMES={id:'Indonesia',en:'English',ms:'Melayu',es:'Español'};
+const L={
+id:{
+  tagline:'Meja ulik empat kanal dengan pemisah instrumen',
+  langAria:'Bahasa',
+  instsAria:'Pilih instrumen yang mau diulik',
+  'inst.bass':'Bass','inst.gitar':'Gitar','inst.keys':'Keyboard','inst.vokal':'Vokal',
+  'instL.bass':'bass','instL.gitar':'gitar','instL.keys':'keyboard','instL.vokal':'vokal',
+  upload:'Upload lagu',micOn:'Dengar dari mic',micOff:'Stop mic',demo:'Lagu demo',fileAria:'Pilih file lagu atau rekaman',
+  tuning:'Stem senar',gate:'Sensitivitas mic',
+  'tun.std4':'4 senar','tun.five':'5 senar','tun.dropD':'Drop D','tun.half':'Turun ½','tun.std':'Standar','tun.whole':'Turun 1',
+  sepTitle:'Pemisah instrumen',askTitle:'Ini rekaman apa?',kindAria:'Jenis rekaman',
+  singleT:'Satu instrumen',singleD:'Rekaman kamu main sendiri, atau track yang sudah terpisah. Langsung diulik.',
+  bandT:'Lagu full band',bandD:'Dipisah dulu jadi drum, bass, gitar/keys, dan vokal supaya nadanya tidak tercampur.',
+  methodLbl:'Cara memisahkan',
+  dspT:'Cepat',dspD:'Jalan di semua HP, sekitar 1 menit untuk lagu 4 menit. Cukup untuk bass dan suasana lagu.',
+  aiT:'AI Demucs',aiTag:'paling bersih',aiD:'Unduh model ±170 MB sekali saja. Prosesnya kira-kira 2× durasi lagu di laptop/PC dengan Chrome atau Edge terbaru; di HP bisa jauh lebih lama.',
+  goSingle:'Mulai ulik',goBand:'Pisahkan & ulik',preparing:'Menyiapkan…',
+  mixAll:'Semua bunyi',mixMinus:'Minus one ({i})',mixOnly:'Hanya {i}',sepAgain:'Pisah ulang pakai AI',
+  singleNote:'Rekaman satu instrumen, langsung diulik tanpa dipisah.',toBand:'Ini lagu full band? Pisahkan',
+  badgeAI:'Dipisah: AI Demucs',badgeDSP:'Dipisah: Cepat',badgeDemo:'Track terpisah (demo)',
+  'stem.drums':'Drum','stem.bass':'Bass','stem.other':'Gitar & keyboard','stem.vocals':'Vokal',
+  'stemS.drums':'Drum','stemS.bass':'Bass','stemS.other':'Gitar/keys','stemS.vocals':'Vokal',
+  soloA:'Solo {x}',muteA:'Bisukan {x}',volA:'Volume {x}',mine:'(yang diulik)',
+  chordLbl:'Chord',diagAria:'Diagram jari chord',ready:'Siap',listening:'Mendengarkan',
+  idlePos:'Pilih instrumen, lalu upload lagu atau putar demo',idlePosTrack:'Mainkan atau putar lagunya',
+  inTune:'pas',capoShape:'capo {n}: bentuk {s}',
+  stVokal:'Nada vokal',stBass:'Nada bass',stMel:'Nada melodi',stLast:'Nada terakhir',
+  posOpen:'Senar <em>{s}</em>, dibunyikan lepas',posFret:'Senar <em>{s}</em>, fret <em>{f}</em>',octShift:'(oktaf digeser)',
+  outRange:'Di luar jangkauan senar',altsPre:'Bisa juga: {l}',altItem:'senar {s} fret {f}',onePos:'Cuma ada satu posisi untuk nada ini',
+  posNot:'Not <em>{a}</em> {s} <small>(do = {d})</small>',posNote:'Nada <em>{n}</em>',
+  altVokal:'Jarum di bawah: seberapa pas nadamu (± cent)',altKeys:'Tuts yang menyala ada di keyboard di bawah',
+  rollTitle:'Jejak nada dan chord',rollAria:'Lajur chord di atas, garis nada naik turun di bawah',
+  play:'Putar',pause:'Jeda',scrubAria:'Posisi waktu',speedAria:'Kecepatan putar',loopAria:'Ulang bagian',loop:'Ulang A–B',
+  fretT:'Fretboard',keysT:'Keyboard',fretInfo:'Atas = senar paling tinggi',keysInfo:'Geser ke samping kalau tidak muat',
+  fretAria:'Fretboard dengan posisi nada',pianoAria:'Keyboard piano dengan nada yang menyala',
+  lgNow:'Nada sekarang',lgOther:'Posisi lain, nadanya sama',lgShape:'Bentuk chord yang bunyi',lgChord:'Nada chord yang bunyi',
+  progT:'Urutan chord',chordN:'{n} chord',keyOf:', kunci {k}',noChord:'Belum ada chord yang terbaca.',
+  trAria:'Transpose',trDown:'Turunkan setengah nada',trUp:'Naikkan setengah nada',trVal:'Transpose {n}',
+  capoAria:'Capo',capoDown:'Kurangi capo',capoUp:'Tambah capo',capoVal:'Capo {n}',noCapo:'Tanpa capo',copyChord:'Salin chord',
+  tabBass:'TAB bass',tabMel:'TAB melodi',tabNA:'Not angka',noteN:'{n} nada',
+  tabNoteF:'Angka dalam kurung, misalnya (3), artinya nadanya di luar jangkauan senar dan ditulis satu oktaf digeser.',
+  tabNoteNA:'Titik di atas angka = oktaf lebih tinggi, titik di bawah = lebih rendah. Garis | = pergantian chord.',
+  copy:'Salin',midi:'Unduh MIDI',clear:'Bersihkan',empty:'Masih kosong',copied:'Tersalin',copyFail:'Gagal menyalin',
+  tips:'<li><b>Lagu full band:</b> pilih "Lagu full band" supaya instrumen dipisah dulu. Mode AI jauh lebih bersih, terutama untuk vokal dan bass.</li><li><b>Minus one:</b> turunkan fader instrumen yang sedang kamu ulik, lalu mainkan bagianmu bareng lagunya.</li><li><b>Bagian susah:</b> tandai A dan B, nyalakan "Ulang A–B", lalu putar 0.5×.</li><li><b>Capo dan transpose:</b> geser kunci lagu supaya pas dengan suaramu, atau pakai capo supaya bentuk chord lebih gampang.</li>',
+  ver:'Ngulik Studio by Alvon, versi {v}',
+  mWait:'File diterima, menunggu proses sebelumnya selesai…',mReading:'Membaca {f}…',mLong:'Lagu lebih dari 6 menit; yang dipakai 6 menit pertama.',
+  mBadFile:'File ini tidak bisa dibaca browser. Coba format lain: mp3, m4a, wav, atau mp4.',mDemo:'Menyiapkan lagu demo…',demoName:'Lagu demo (Am F C G)',
+  mSeparating:'Memisahkan instrumen…',whyNet:'komponen AI tidak bisa diunduh, cek koneksi internet atau buka dari link GitHub Pages',whyMem:'memori perangkat tidak cukup, coba di laptop/PC',
+  mAIFail:'Mode AI belum bisa jalan ({w}). Dipakai mode Cepat dulu.',mSepFail:'Gagal memisahkan: {e}',mAnalyzing:'Mengulik {i}… {p}%',
+  mNothing:'Belum ada nada atau chord yang terbaca. Coba rekaman yang lebih jelas.',
+  mNoMic:'Browser ini tidak memberi akses mikrofon di sini. Buka Ngulik Studio dari link GitHub Pages untuk mode mic.',
+  mMicBlocked:'Mikrofon diblok. Izinkan akses mic di browser, lalu coba lagi.',mNoMidi:'Belum ada nada untuk diekspor.',
+  micLive:'Mic langsung',micRec:'Rekaman mic {t}',midiMel:'Melodi {i}',
+  pBass:'Melacak nada bass…',pLead:'Melacak melodi utama…',pSep:'Memisahkan instrumen…',
+  pDl:'Mengunduh model AI… {a} / ±170 MB',pLoad:'Memuat model AI…',pInit:'Menyiapkan model AI…',pAI:'Memisahkan dengan AI… bagian {k} dari {n}'
+},
+en:{
+  tagline:'A four-channel desk for learning songs by ear',
+  langAria:'Language',
+  instsAria:'Choose the instrument to learn',
+  'inst.bass':'Bass','inst.gitar':'Guitar','inst.keys':'Keys','inst.vokal':'Vocals',
+  'instL.bass':'bass','instL.gitar':'guitar','instL.keys':'keys','instL.vokal':'vocals',
+  upload:'Upload song',micOn:'Listen via mic',micOff:'Stop mic',demo:'Demo song',fileAria:'Choose a song or recording file',
+  tuning:'Tuning',gate:'Mic sensitivity',
+  'tun.std4':'4-string','tun.five':'5-string','tun.dropD':'Drop D','tun.half':'Half step down','tun.std':'Standard','tun.whole':'Whole step down',
+  sepTitle:'Instrument separator',askTitle:'What kind of recording is this?',kindAria:'Recording type',
+  singleT:'One instrument',singleD:'You playing alone, or a track that is already separated. Analyzed right away.',
+  bandT:'Full band song',bandD:'Split into drums, bass, guitar/keys and vocals first, so the notes don’t blur together.',
+  methodLbl:'How to separate',
+  dspT:'Fast',dspD:'Works on any phone, about 1 minute for a 4-minute song. Good enough for bass and the overall feel.',
+  aiT:'AI Demucs',aiTag:'cleanest',aiD:'Downloads a ±170 MB model once. Takes about 2× the song length on a laptop/PC with the latest Chrome or Edge; much longer on phones.',
+  goSingle:'Start',goBand:'Separate and analyze',preparing:'Preparing…',
+  mixAll:'All on',mixMinus:'Without {i}',mixOnly:'Only {i}',sepAgain:'Separate again with AI',
+  singleNote:'Single-instrument recording, analyzed without separating.',toBand:'Is this a full band song? Separate it',
+  badgeAI:'Separated: AI Demucs',badgeDSP:'Separated: Fast',badgeDemo:'Separate tracks (demo)',
+  'stem.drums':'Drums','stem.bass':'Bass','stem.other':'Guitar & keys','stem.vocals':'Vocals',
+  'stemS.drums':'Drums','stemS.bass':'Bass','stemS.other':'Gtr/keys','stemS.vocals':'Vocals',
+  soloA:'Solo {x}',muteA:'Mute {x}',volA:'{x} volume',mine:'(the one you are learning)',
+  chordLbl:'Chord',diagAria:'Chord fingering diagram',ready:'Ready',listening:'Listening',
+  idlePos:'Pick an instrument, then upload a song or play the demo',idlePosTrack:'Play your instrument or the song',
+  inTune:'in tune',capoShape:'capo {n}: {s} shape',
+  stVokal:'Vocal note',stBass:'Bass note',stMel:'Melody note',stLast:'Last note',
+  posOpen:'<em>{s}</em> string, open',posFret:'<em>{s}</em> string, fret <em>{f}</em>',octShift:'(octave shifted)',
+  outRange:'Outside the strings’ range',altsPre:'Also at: {l}',altItem:'{s} string fret {f}',onePos:'Only one spot for this note',
+  posNot:'Note <em>{a}</em> {s} <small>(do = {d})</small>',posNote:'Note <em>{n}</em>',
+  altVokal:'The needle shows how in tune you are (± cents)',altKeys:'The lit keys are on the keyboard below',
+  rollTitle:'Note trail and chords',rollAria:'Chord lane on top, notes moving up and down below',
+  play:'Play',pause:'Pause',scrubAria:'Time position',speedAria:'Playback speed',loopAria:'Loop a section',loop:'Loop A–B',
+  fretT:'Fretboard',keysT:'Keyboard',fretInfo:'Top = highest string',keysInfo:'Scroll sideways if it doesn’t fit',
+  fretAria:'Fretboard with note positions',pianoAria:'Piano keyboard with lit notes',
+  lgNow:'Current note',lgOther:'Other spots, same note',lgShape:'Chord shape being played',lgChord:'Notes of the current chord',
+  progT:'Chord progression',chordN:'{n} chords',keyOf:', key of {k}',noChord:'No chords detected yet.',
+  trAria:'Transpose',trDown:'Down a half step',trUp:'Up a half step',trVal:'Transpose {n}',
+  capoAria:'Capo',capoDown:'Lower capo',capoUp:'Raise capo',capoVal:'Capo {n}',noCapo:'No capo',copyChord:'Copy chords',
+  tabBass:'Bass TAB',tabMel:'Melody TAB',tabNA:'Number notation',noteN:'{n} notes',
+  tabNoteF:'Numbers in brackets, like (3), mean the note is outside the strings’ range and is written an octave shifted.',
+  tabNoteNA:'A dot above a number = one octave higher, a dot below = lower. A | line = chord change.',
+  copy:'Copy',midi:'Download MIDI',clear:'Clear',empty:'Nothing yet',copied:'Copied',copyFail:'Couldn’t copy',
+  tips:'<li><b>Full band songs:</b> choose "Full band song" so the instruments are separated first. AI mode is much cleaner, especially for vocals and bass.</li><li><b>Play along:</b> pull down the fader of the instrument you are learning, then play your part with the song.</li><li><b>Hard parts:</b> mark A and B, turn on "Loop A–B", then play at 0.5×.</li><li><b>Capo and transpose:</b> shift the key to fit your voice, or use a capo for easier chord shapes.</li>',
+  ver:'Ngulik Studio by Alvon, version {v}',
+  mWait:'File received, waiting for the current job to finish…',mReading:'Reading {f}…',mLong:'The song is longer than 6 minutes; only the first 6 minutes are used.',
+  mBadFile:'Your browser can’t read this file. Try another format: mp3, m4a, wav or mp4.',mDemo:'Preparing the demo song…',demoName:'Demo song (Am F C G)',
+  mSeparating:'Separating instruments…',whyNet:'the AI files couldn’t be downloaded; check your connection or open the GitHub Pages link',whyMem:'not enough device memory; try a laptop/PC',
+  mAIFail:'AI mode can’t run yet ({w}). Using Fast mode for now.',mSepFail:'Separation failed: {e}',mAnalyzing:'Analyzing {i}… {p}%',
+  mNothing:'No notes or chords detected yet. Try a clearer recording.',
+  mNoMic:'This browser doesn’t allow mic access here. Open Ngulik Studio from the GitHub Pages link to use the mic.',
+  mMicBlocked:'The mic is blocked. Allow mic access in your browser, then try again.',mNoMidi:'No notes to export yet.',
+  micLive:'Live mic',micRec:'Mic recording {t}',midiMel:'{i} melody',
+  pBass:'Tracking bass notes…',pLead:'Tracking the main melody…',pSep:'Separating instruments…',
+  pDl:'Downloading the AI model… {a} / ±170 MB',pLoad:'Loading the AI model…',pInit:'Preparing the AI model…',pAI:'Separating with AI… part {k} of {n}'
+},
+ms:{
+  tagline:'Meja ulik empat saluran dengan pemisah instrumen',
+  langAria:'Bahasa',
+  instsAria:'Pilih instrumen yang mahu diulik',
+  'inst.bass':'Bass','inst.gitar':'Gitar','inst.keys':'Keyboard','inst.vokal':'Vokal',
+  'instL.bass':'bass','instL.gitar':'gitar','instL.keys':'keyboard','instL.vokal':'vokal',
+  upload:'Muat naik lagu',micOn:'Dengar dari mikrofon',micOff:'Henti mikrofon',demo:'Lagu demo',fileAria:'Pilih fail lagu atau rakaman',
+  tuning:'Penalaan tali',gate:'Kepekaan mikrofon',
+  'tun.std4':'4 tali','tun.five':'5 tali','tun.dropD':'Drop D','tun.half':'Turun ½','tun.std':'Standard','tun.whole':'Turun 1',
+  sepTitle:'Pemisah instrumen',askTitle:'Ini rakaman apa?',kindAria:'Jenis rakaman',
+  singleT:'Satu instrumen',singleD:'Rakaman anda bermain sendiri, atau trek yang sudah diasingkan. Terus diulik.',
+  bandT:'Lagu penuh band',bandD:'Diasingkan dahulu kepada dram, bass, gitar/keyboard dan vokal supaya notnya tidak bercampur.',
+  methodLbl:'Cara mengasingkan',
+  dspT:'Pantas',dspD:'Berjalan di semua telefon, kira-kira 1 minit untuk lagu 4 minit. Cukup untuk bass dan suasana lagu.',
+  aiT:'AI Demucs',aiTag:'paling bersih',aiD:'Muat turun model ±170 MB sekali sahaja. Prosesnya kira-kira 2× tempoh lagu di komputer riba/PC dengan Chrome atau Edge terkini; di telefon boleh jauh lebih lama.',
+  goSingle:'Mula ulik',goBand:'Asingkan & ulik',preparing:'Menyediakan…',
+  mixAll:'Semua berbunyi',mixMinus:'Minus one ({i})',mixOnly:'Hanya {i}',sepAgain:'Asing semula guna AI',
+  singleNote:'Rakaman satu instrumen, terus diulik tanpa diasingkan.',toBand:'Ini lagu penuh band? Asingkan',
+  badgeAI:'Diasingkan: AI Demucs',badgeDSP:'Diasingkan: Pantas',badgeDemo:'Trek berasingan (demo)',
+  'stem.drums':'Dram','stem.bass':'Bass','stem.other':'Gitar & keyboard','stem.vocals':'Vokal',
+  'stemS.drums':'Dram','stemS.bass':'Bass','stemS.other':'Gitar/keys','stemS.vocals':'Vokal',
+  soloA:'Solo {x}',muteA:'Senyapkan {x}',volA:'Kelantangan {x}',mine:'(yang sedang diulik)',
+  chordLbl:'Kord',diagAria:'Rajah jari kord',ready:'Sedia',listening:'Mendengar',
+  idlePos:'Pilih instrumen, kemudian muat naik lagu atau mainkan demo',idlePosTrack:'Mainkan alat muzik atau putar lagunya',
+  inTune:'tepat',capoShape:'capo {n}: bentuk {s}',
+  stVokal:'Not vokal',stBass:'Not bass',stMel:'Not melodi',stLast:'Not terakhir',
+  posOpen:'Tali <em>{s}</em>, dibunyikan terbuka',posFret:'Tali <em>{s}</em>, fret <em>{f}</em>',octShift:'(oktaf dianjak)',
+  outRange:'Di luar julat tali',altsPre:'Boleh juga: {l}',altItem:'tali {s} fret {f}',onePos:'Hanya ada satu kedudukan untuk not ini',
+  posNot:'Not <em>{a}</em> {s} <small>(do = {d})</small>',posNote:'Not <em>{n}</em>',
+  altVokal:'Jarum di bawah menunjukkan sejauh mana not anda tepat (± sen)',altKeys:'Kekunci yang menyala ada pada keyboard di bawah',
+  rollTitle:'Jejak not dan kord',rollAria:'Lorong kord di atas, garis not naik turun di bawah',
+  play:'Main',pause:'Jeda',scrubAria:'Kedudukan masa',speedAria:'Kelajuan main',loopAria:'Ulang bahagian',loop:'Ulang A–B',
+  fretT:'Papan fret',keysT:'Keyboard',fretInfo:'Atas = tali paling tinggi',keysInfo:'Leret ke tepi jika tidak muat',
+  fretAria:'Papan fret dengan kedudukan not',pianoAria:'Keyboard piano dengan not yang menyala',
+  lgNow:'Not sekarang',lgOther:'Kedudukan lain, not sama',lgShape:'Bentuk kord yang berbunyi',lgChord:'Not kord yang berbunyi',
+  progT:'Urutan kord',chordN:'{n} kord',keyOf:', kunci {k}',noChord:'Belum ada kord yang dikesan.',
+  trAria:'Transpos',trDown:'Turunkan setengah nada',trUp:'Naikkan setengah nada',trVal:'Transpos {n}',
+  capoAria:'Capo',capoDown:'Kurangkan capo',capoUp:'Tambah capo',capoVal:'Capo {n}',noCapo:'Tanpa capo',copyChord:'Salin kord',
+  tabBass:'TAB bass',tabMel:'TAB melodi',tabNA:'Not angka',noteN:'{n} not',
+  tabNoteF:'Nombor dalam kurungan, contohnya (3), bermaksud not itu di luar julat tali dan ditulis satu oktaf dianjak.',
+  tabNoteNA:'Titik di atas nombor = satu oktaf lebih tinggi, titik di bawah = lebih rendah. Garis | = pertukaran kord.',
+  copy:'Salin',midi:'Muat turun MIDI',clear:'Kosongkan',empty:'Masih kosong',copied:'Disalin',copyFail:'Gagal menyalin',
+  tips:'<li><b>Lagu penuh band:</b> pilih "Lagu penuh band" supaya instrumen diasingkan dahulu. Mod AI jauh lebih bersih, terutamanya untuk vokal dan bass.</li><li><b>Minus one:</b> turunkan fader instrumen yang sedang anda ulik, kemudian mainkan bahagian anda bersama lagunya.</li><li><b>Bahagian sukar:</b> tanda A dan B, hidupkan "Ulang A–B", kemudian mainkan pada 0.5×.</li><li><b>Capo dan transpos:</b> anjak kunci lagu supaya sesuai dengan suara anda, atau guna capo supaya bentuk kord lebih mudah.</li>',
+  ver:'Ngulik Studio by Alvon, versi {v}',
+  mWait:'Fail diterima, menunggu proses sebelumnya selesai…',mReading:'Membaca {f}…',mLong:'Lagu lebih daripada 6 minit; hanya 6 minit pertama digunakan.',
+  mBadFile:'Pelayar tidak dapat membaca fail ini. Cuba format lain: mp3, m4a, wav atau mp4.',mDemo:'Menyediakan lagu demo…',demoName:'Lagu demo (Am F C G)',
+  mSeparating:'Mengasingkan instrumen…',whyNet:'komponen AI tidak dapat dimuat turun; semak sambungan internet atau buka pautan GitHub Pages',whyMem:'memori peranti tidak mencukupi; cuba di komputer riba/PC',
+  mAIFail:'Mod AI belum boleh berjalan ({w}). Mod Pantas digunakan dahulu.',mSepFail:'Gagal mengasingkan: {e}',mAnalyzing:'Mengulik {i}… {p}%',
+  mNothing:'Belum ada not atau kord yang dikesan. Cuba rakaman yang lebih jelas.',
+  mNoMic:'Pelayar ini tidak membenarkan akses mikrofon di sini. Buka Ngulik Studio dari pautan GitHub Pages untuk mod mikrofon.',
+  mMicBlocked:'Mikrofon disekat. Benarkan akses mikrofon dalam pelayar, kemudian cuba lagi.',mNoMidi:'Belum ada not untuk dieksport.',
+  micLive:'Mikrofon langsung',micRec:'Rakaman mikrofon {t}',midiMel:'Melodi {i}',
+  pBass:'Menjejak not bass…',pLead:'Menjejak melodi utama…',pSep:'Mengasingkan instrumen…',
+  pDl:'Memuat turun model AI… {a} / ±170 MB',pLoad:'Memuatkan model AI…',pInit:'Menyediakan model AI…',pAI:'Mengasingkan dengan AI… bahagian {k} daripada {n}'
+},
+es:{
+  tagline:'Mesa de cuatro canales para sacar canciones de oído',
+  langAria:'Idioma',
+  instsAria:'Elige el instrumento que quieres sacar',
+  'inst.bass':'Bajo','inst.gitar':'Guitarra','inst.keys':'Teclado','inst.vokal':'Voz',
+  'instL.bass':'bajo','instL.gitar':'guitarra','instL.keys':'teclado','instL.vokal':'voz',
+  upload:'Subir canción',micOn:'Escuchar por micrófono',micOff:'Detener micrófono',demo:'Canción demo',fileAria:'Elige un archivo de canción o grabación',
+  tuning:'Afinación',gate:'Sensibilidad del micrófono',
+  'tun.std4':'4 cuerdas','tun.five':'5 cuerdas','tun.dropD':'Drop D','tun.half':'Medio tono abajo','tun.std':'Estándar','tun.whole':'Un tono abajo',
+  sepTitle:'Separador de instrumentos',askTitle:'¿Qué tipo de grabación es?',kindAria:'Tipo de grabación',
+  singleT:'Un solo instrumento',singleD:'Tú tocando solo, o una pista ya separada. Se analiza al instante.',
+  bandT:'Canción con banda completa',bandD:'Primero se separa en batería, bajo, guitarra/teclado y voz para que las notas no se mezclen.',
+  methodLbl:'Cómo separar',
+  dspT:'Rápido',dspD:'Funciona en cualquier móvil, cerca de 1 minuto para una canción de 4 minutos. Suficiente para el bajo y el ambiente.',
+  aiT:'IA Demucs',aiTag:'la más limpia',aiD:'Descarga un modelo de ±170 MB una sola vez. Tarda unas 2× la duración de la canción en un portátil/PC con Chrome o Edge recientes; en el móvil, mucho más.',
+  goSingle:'Empezar',goBand:'Separar y analizar',preparing:'Preparando…',
+  mixAll:'Todo',mixMinus:'Sin {i}',mixOnly:'Solo {i}',sepAgain:'Separar de nuevo con IA',
+  singleNote:'Grabación de un solo instrumento, analizada sin separar.',toBand:'¿Es una canción con banda? Sepárala',
+  badgeAI:'Separado: IA Demucs',badgeDSP:'Separado: Rápido',badgeDemo:'Pistas separadas (demo)',
+  'stem.drums':'Batería','stem.bass':'Bajo','stem.other':'Guitarra y teclado','stem.vocals':'Voz',
+  'stemS.drums':'Batería','stemS.bass':'Bajo','stemS.other':'Gtr/tecl.','stemS.vocals':'Voz',
+  soloA:'Solo {x}',muteA:'Silenciar {x}',volA:'Volumen de {x}',mine:'(el que estás sacando)',
+  chordLbl:'Acorde',diagAria:'Diagrama de digitación del acorde',ready:'Listo',listening:'Escuchando',
+  idlePos:'Elige un instrumento y sube una canción o pon la demo',idlePosTrack:'Toca o reproduce la canción',
+  inTune:'afinado',capoShape:'cejilla {n}: forma de {s}',
+  stVokal:'Nota de voz',stBass:'Nota de bajo',stMel:'Nota de melodía',stLast:'Última nota',
+  posOpen:'Cuerda <em>{s}</em>, al aire',posFret:'Cuerda <em>{s}</em>, traste <em>{f}</em>',octShift:'(octava desplazada)',
+  outRange:'Fuera del rango de las cuerdas',altsPre:'También en: {l}',altItem:'cuerda {s} traste {f}',onePos:'Solo hay una posición para esta nota',
+  posNot:'Nota <em>{a}</em> {s} <small>(do = {d})</small>',posNote:'Nota <em>{n}</em>',
+  altVokal:'La aguja muestra qué tan afinado estás (± cents)',altKeys:'Las teclas iluminadas están en el teclado de abajo',
+  rollTitle:'Notas y acordes',rollAria:'Carril de acordes arriba, notas que suben y bajan abajo',
+  play:'Reproducir',pause:'Pausa',scrubAria:'Posición en el tiempo',speedAria:'Velocidad',loopAria:'Repetir una parte',loop:'Repetir A–B',
+  fretT:'Diapasón',keysT:'Teclado',fretInfo:'Arriba = cuerda más aguda',keysInfo:'Desliza a los lados si no cabe',
+  fretAria:'Diapasón con posiciones de notas',pianoAria:'Teclado de piano con notas iluminadas',
+  lgNow:'Nota actual',lgOther:'Otras posiciones, misma nota',lgShape:'Forma del acorde que suena',lgChord:'Notas del acorde que suena',
+  progT:'Progresión de acordes',chordN:'{n} acordes',keyOf:', tonalidad {k}',noChord:'Aún no se detectan acordes.',
+  trAria:'Transponer',trDown:'Bajar medio tono',trUp:'Subir medio tono',trVal:'Transponer {n}',
+  capoAria:'Cejilla',capoDown:'Bajar cejilla',capoUp:'Subir cejilla',capoVal:'Cejilla {n}',noCapo:'Sin cejilla',copyChord:'Copiar acordes',
+  tabBass:'TAB de bajo',tabMel:'TAB de melodía',tabNA:'Notación numérica',noteN:'{n} notas',
+  tabNoteF:'Los números entre paréntesis, como (3), indican que la nota está fuera del rango de las cuerdas y se escribe una octava desplazada.',
+  tabNoteNA:'Un punto encima del número = una octava más alta, un punto debajo = más baja. Una línea | = cambio de acorde.',
+  copy:'Copiar',midi:'Descargar MIDI',clear:'Borrar',empty:'Aún vacío',copied:'Copiado',copyFail:'No se pudo copiar',
+  tips:'<li><b>Canciones con banda:</b> elige "Canción con banda completa" para separar los instrumentos primero. El modo IA es mucho más limpio, sobre todo para voz y bajo.</li><li><b>Tocar encima:</b> baja el fader del instrumento que estás sacando y toca tu parte con la canción.</li><li><b>Partes difíciles:</b> marca A y B, activa "Repetir A–B" y reproduce a 0.5×.</li><li><b>Cejilla y transposición:</b> cambia la tonalidad para tu voz, o usa cejilla para formas de acordes más fáciles.</li>',
+  ver:'Ngulik Studio by Alvon, versión {v}',
+  mWait:'Archivo recibido, esperando a que termine el proceso anterior…',mReading:'Leyendo {f}…',mLong:'La canción dura más de 6 minutos; se usan solo los primeros 6.',
+  mBadFile:'El navegador no puede leer este archivo. Prueba otro formato: mp3, m4a, wav o mp4.',mDemo:'Preparando la canción demo…',demoName:'Canción demo (Am F C G)',
+  mSeparating:'Separando instrumentos…',whyNet:'no se pudieron descargar los archivos de IA; revisa tu conexión o abre el enlace de GitHub Pages',whyMem:'no hay suficiente memoria; prueba en un portátil/PC',
+  mAIFail:'El modo IA aún no funciona ({w}). Se usa el modo Rápido por ahora.',mSepFail:'Error al separar: {e}',mAnalyzing:'Analizando {i}… {p}%',
+  mNothing:'Aún no se detectan notas ni acordes. Prueba una grabación más clara.',
+  mNoMic:'Este navegador no permite usar el micrófono aquí. Abre Ngulik Studio desde el enlace de GitHub Pages para usar el micrófono.',
+  mMicBlocked:'El micrófono está bloqueado. Permite el acceso en el navegador y vuelve a intentarlo.',mNoMidi:'Aún no hay notas para exportar.',
+  micLive:'Micrófono en vivo',micRec:'Grabación de micrófono {t}',midiMel:'Melodía de {i}',
+  pBass:'Siguiendo las notas del bajo…',pLead:'Siguiendo la melodía principal…',pSep:'Separando instrumentos…',
+  pDl:'Descargando el modelo de IA… {a} / ±170 MB',pLoad:'Cargando el modelo de IA…',pInit:'Preparando el modelo de IA…',pAI:'Separando con IA… parte {k} de {n}'
+}};
+let LANG=(()=>{const s=store.get('ns.lang');if(L[s])return s;
+  const ls=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||'id']).map(x=>String(x));
+  if(ls.some(x=>/^id\b|-ID$/i.test(x)))return 'id';const p=ls[0].slice(0,2).toLowerCase();return L[p]?p:'id';})();
+function t(k,v){let s=L[LANG][k];if(s==null)s=L.id[k];if(s==null)return k;if(v)s=s.replace(/\{(\w)\}/g,(m,x)=>v[x]!=null?v[x]:m);return s;}
+function applyStatic(){
+  document.documentElement.lang=LANG;
+  document.querySelectorAll('[data-i18n]').forEach(e=>{e.textContent=t(e.dataset.i18n);});
+  document.querySelectorAll('[data-i18n-html]').forEach(e=>{e.innerHTML=t(e.dataset.i18nHtml);});
+  document.querySelectorAll('[data-i18n-aria]').forEach(e=>{e.setAttribute('aria-label',t(e.dataset.i18nAria));});
+  const v=document.getElementById('ver');if(v)v.textContent=t('ver',{v:APP_VER});
+}
+
 Object.assign(CP,{SEP_HP:150,SEP_LMIN:110,SEP_LV:0.15,SEP_TW:16,SEP_FW:8,SEP_SUB:45,SEP_LW:0.02,SEP_BW:0.03,SEP_BWM:1.3,SEP_EXT:5,SEP_2P:false});
 /* ---------- pemisah instrumen cepat (tanpa AI): HPSS + topeng harmonik mengikuti nada bass & melodi ---------- */
 function yinGeneric(sr,N,fmin,fmax){
@@ -1043,7 +1314,7 @@ async function separateDSP(x,sr,onP,opt={}){
   const N=2048,H=512,K=N/2+1,binHz=sr/N,len=x.length;
   const P=(a,b)=>onP&&onP(a,b);
   // 1) jalur nada bass: low-pass + YIN
-  P(0.02,'Melacak nada bass…');
+  P(0.02,t('pBass'));
   const dsB=Math.max(1,Math.round(sr/5512)),srB=sr/dsB,xb=downsampleLP(x,dsB,len);
   const lpB=new Float32Array(xb.length);{const a=Math.exp(-2*Math.PI*320/srB);let y1=0,y2=0;for(let i=0;i<xb.length;i++){y1=a*y1+(1-a)*xb[i];y2=a*y2+(1-a)*y1;lpB[i]=y2;}}
   const nFr=Math.ceil(len/H)+1,NB=512,yb=yinGeneric(srB,NB,30,320);
@@ -1052,7 +1323,7 @@ async function separateDSP(x,sr,onP,opt={}){
     const c=Math.round(i*H/dsB)-NB/2;if(c<0||c+NB>lpB.length)continue;
     const r=yb(lpB.subarray(c,c+NB));brms[i]=r.rms;if(r.rms>bmax)bmax=r.rms;
     if(r.f&&r.clar>0.75)bassF0[i]=r.f;
-    if(i%2000===1999){P(0.02+0.08*i/nFr,'Melacak nada bass…');await tick0();}
+    if(i%2000===1999){P(0.02+0.08*i/nFr,t('pBass'));await tick0();}
   }
   for(let i=0;i<nFr;i++)if(brms[i]<bmax*0.04)bassF0[i]=0;
   // isi celah di awal/akhir nada (YIN telat beberapa frame saat nada baru dipetik)
@@ -1064,11 +1335,11 @@ async function separateDSP(x,sr,onP,opt={}){
   // 2) jalur melodi utama (vokal/solo): salience harmonik + Viterbi pada sinyal tanpa bass
   const leadF0=new Float32Array(nFr);
   if(!opt.noLead){
-  P(0.1,'Melacak melodi utama…');
+  P(0.1,t('pLead'));
   let src=x;
   if(CP.SEP_2P){const pre=await separateDSP(x,sr,null,{noLead:true});src=new Float32Array(len);for(let i=0;i<len;i++)src[i]=x[i]-pre.drums[i]-pre.bass[i];}
   const hp=new Float32Array(len);{const a=Math.exp(-2*Math.PI*CP.SEP_HP/sr);let y1=0,y2=0;for(let i=0;i<len;i++){y1=a*y1+(1-a)*src[i];y2=a*y2+(1-a)*y1;hp[i]=src[i]-y2;}}
-  const st=await salienceTrack(hp,sr,H,p=>P(0.1+0.3*p,'Melacak melodi utama…'));
+  const st=await salienceTrack(hp,sr,H,p=>P(0.1+0.3*p,t('pLead')));
   for(let i=0;i<Math.min(nFr,st.path.length);i++){const s2=st.path[i];if(s2!==st.U){const f=st.BMIN*Math.pow(2,s2/60);if(f>=CP.SEP_LMIN&&st.sal[i][s2]>st.ref*CP.SEP_LV)leadF0[i]=f;}}
   // hapus potongan melodi yang terlalu pendek
   for(let i=0;i<nFr;){if(!leadF0[i]){i++;continue;}let j=i;while(j<nFr&&leadF0[j])j++;if(j-i<4)for(let k=i;k<j;k++)leadF0[k]=0;i=j;}
@@ -1124,7 +1395,7 @@ async function separateDSP(x,sr,onP,opt={}){
         for(let i=0;i<N;i++){const j=c+i;if(j>=0&&j<len)dst[j]+=re[i]/N*win[i]*norm;}
       }
     }
-    P(0.4+0.58*bEnd/nFr,'Memisahkan instrumen…');await tick0();
+    P(0.4+0.58*bEnd/nFr,t('pSep'));await tick0();
   }
   for(let i=0;i<len;i++)out.other[i]=x[i]-out.drums[i]-out.bass[i]-out.vocals[i];
   out.bassF0=bassF0;out.leadF0=leadF0;out.hop=H/sr;
@@ -1166,12 +1437,12 @@ function aiSep(ch0,ch1){
 async function separateAI(ch0,ch1,onP,segS=30,ovS=1){
   const P=(p,t)=>onP&&onP(p,t);
   AI.onProgress=m=>{
-    if(m.phase==='download')P(0.02+0.2*m.p,'Mengunduh model AI… '+Math.round(m.mb)+' / ±170 MB');
-    else if(m.phase==='load')P(0.22,'Memuat model AI…');
-    else if(m.phase==='init')P(0.23,'Menyiapkan model AI…');
-    else if(m.phase==='sep'&&AI._seg)P(0.25+0.73*((AI._seg.k+m.p)/AI._seg.n),'Memisahkan dengan AI… bagian '+(AI._seg.k+1)+' dari '+AI._seg.n);
+    if(m.phase==='download')P(0.02+0.2*m.p,t('pDl',{a:Math.round(m.mb)}));
+    else if(m.phase==='load')P(0.22,t('pLoad'));
+    else if(m.phase==='init')P(0.23,t('pInit'));
+    else if(m.phase==='sep'&&AI._seg)P(0.25+0.73*((AI._seg.k+m.p)/AI._seg.n),t('pAI',{k:AI._seg.k+1,n:AI._seg.n}));
   };
-  P(0.01,'Menyiapkan AI…');
+  P(0.01,t('pInit'));
   await aiInit();
   const len=ch0.length,L=Math.round(segS*44100),O=Math.round(ovS*44100),n=Math.max(1,Math.ceil(len/L));
   const outLen=Math.floor(len/2),out={drums:new Float32Array(outLen),bass:new Float32Array(outLen),other:new Float32Array(outLen),vocals:new Float32Array(outLen)};
@@ -1199,10 +1470,10 @@ async function separateAI(ch0,ch1,onP,segS=30,ovS=1){
 const $=s=>document.querySelector(s);
 const $$=s=>Array.from(document.querySelectorAll(s));
 const SRW=22050; // laju sampel kerja
-const STEMS=[['drums','Drum'],['bass','Bass'],['other','Gitar & keyboard'],['vocals','Vokal']];
+const STEMS=[['drums'],['bass'],['other'],['vocals']];
 const INSTS=['bass','gitar','keys','vokal'];
 const INST_STEM={bass:'bass',gitar:'other',keys:'other',vokal:'vocals'};
-const INST_NAME={bass:'bass',gitar:'gitar',keys:'keyboard',vokal:'vokal'};
+const instL=v=>t('instL.'+v);
 const SOLFA=['do','di','re','ri','mi','fa','fi','sol','sel','la','le','si'];
 const ANGKA=['1','#1','2','#2','3','4','#4','5','#5','6','#6','7'];
 let TR=0,CAPO=0;
@@ -1359,31 +1630,31 @@ const MAXS=360;
 function nextPending(){if(pendingFile){const f=pendingFile;pendingFile=null;loadFile(f);}}
 async function loadFile(file){
   if(!file)return;
-  if(busy){pendingFile=file;msg('File diterima, menunggu proses sebelumnya selesai…');return;}
+  if(busy){pendingFile=file;msg(t('mWait'));return;}
   busy=true;stopMic();player.unload();msg('');
   try{
-    overlay('Membaca '+file.name+'…',0.05);
+    overlay(t('mReading',{f:file.name}),0.05);
     const buf=await decodeFile(file);
-    if(buf.duration>MAXS)msg('Lagu lebih dari 6 menit; yang dipakai 6 menit pertama.');
+    if(buf.duration>MAXS)msg(t('mLong'));
     const [mono]=await renderAt(buf,SRW,1,MAXS);
     song={name:file.name,kind:null,mono,file,stems:null,cache:{},dur:mono.length/SRW,url:URL.createObjectURL(file)};
     resetView();overlay(null);
     showAsk();
     loadPlayback();
-  }catch(e){overlay(null);msg('File ini tidak bisa dibaca browser. Coba format lain: mp3, m4a, wav, atau mp4.');}
+  }catch(e){overlay(null);msg(t('mBadFile'));}
   busy=false;nextPending();
 }
 async function loadDemo(){
   if(busy)return;busy=true;stopMic();player.unload();msg('');
-  overlay('Menyiapkan lagu demo…',0.1);await tick0();
+  overlay(t('mDemo'),0.1);await tick0();
   const d=genDemoBand();
-  song={name:'Lagu demo · Am F C G',kind:'band',mono:d.mix,file:null,stems:{mode:'demo',...d.stems},cache:{},dur:d.mix.length/SRW,url:null};
+  song={name:t('demoName'),kind:'band',mono:d.mix,file:null,stems:{mode:'demo',...d.stems},cache:{},dur:d.mix.length/SRW,url:null};
   resetView();showMixer();loadPlayback();
   busy=false;
   await analyzeCurrent(4.2);
   nextPending();
 }
-function resetView(){track=null;viewT=0;loop.a=loop.b=null;loop.on=false;for(const k in mix)mix[k]={vol:1,mute:false,solo:false};$('#srcName').textContent=song?song.name:'—';$('#sepName').textContent=song?song.name:'—';renderMixer();rebuildAll();ui();render();}
+function resetView(){track=null;viewT=0;loop.a=loop.b=null;loop.on=false;for(const k in mix)mix[k]={vol:1,mute:false,solo:false};$('#srcName').textContent=song?song.name:'–';$('#sepName').textContent=song?song.name:'–';renderMixer();rebuildAll();ui();render();}
 
 /* ---------- panel pemisah ---------- */
 let askKind=null,askMethod=store.get('ns.method')==='ai'?'ai':'dsp';
@@ -1392,15 +1663,15 @@ function showAsk(){
   askKind=null;showPanel('sepAsk');
   $$('[data-kind]').forEach(b=>b.setAttribute('aria-pressed','false'));
   $$('[data-method]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.method===askMethod)));
-  $('#methodBox').hidden=true;$('#sepGo').disabled=true;$('#sepGo').textContent='Mulai ulik';
+  $('#methodBox').hidden=true;$('#sepGo').disabled=true;$('#sepGo').textContent=t('goSingle');
 }
 function showMixer(){showPanel('sepMix');renderMixer();
-  const m=song.stems.mode;$('#sepBadge').textContent=m==='ai'?'Dipisah: AI Demucs':m==='dsp'?'Dipisah: Cepat':'Track terpisah (demo)';
+  const m=song.stems.mode;$('#sepBadge').textContent=t(m==='ai'?'badgeAI':m==='dsp'?'badgeDSP':'badgeDemo');
   $('#sepAgain').hidden=m!=='dsp';}
 function showSingle(){showPanel('sepSingle');}
 async function startSeparation(method){
   if(!song)return;busy=true;player.pause();
-  showPanel('sepBusy');sepProgress(0,'Menyiapkan…');overlay('Memisahkan instrumen…',0);
+  showPanel('sepBusy');sepProgress(0,t('preparing'));overlay(t('mSeparating'),0);
   try{
     let st;
     if(method==='ai'){
@@ -1421,21 +1692,29 @@ async function startSeparation(method){
   }catch(e){
     overlay(null);busy=false;
     if(method==='ai'){const em=String(e&&e.message||e);
-      const why=/importScripts|fetch|Failed|network|diunduh|Load failed/i.test(em)?'komponen AI tidak bisa diunduh, cek koneksi internet atau buka dari link GitHub Pages':/memory|alloc|Out of/i.test(em)?'memori perangkat tidak cukup, coba di laptop/PC':em;
-      msg('Mode AI belum bisa jalan ('+why+'). Dipakai mode Cepat dulu.');return startSeparation('dsp');}
-    msg('Gagal memisahkan: '+(e&&e.message||e));showAsk();
+      const why=/importScripts|fetch|Failed|network|diunduh|Load failed/i.test(em)?t('whyNet'):/memory|alloc|Out of/i.test(em)?t('whyMem'):em;
+      msg(t('mAIFail',{w:why}));return startSeparation('dsp');}
+    msg(t('mSepFail',{e:(e&&e.message||e)}));showAsk();
   }
 }
 
 /* ---------- mixer ---------- */
+const STEM_CAP={drums:'--c-drum',bass:'--c-bass',other:'--c-gitar',vocals:'--c-vokal'};
+const capPos=v=>`calc(10px + (100% - 20px) * ${(Math.min(1.5,Math.max(0,v))/1.5).toFixed(4)})`;
 function renderMixer(){
   const box=$('#mixer');if(!box)return;
-  box.innerHTML=STEMS.map(([k,label])=>{const m=mix[k],hear=audible(k);
-    return `<div class="mrow${hear?'':' off'}" data-k="${k}"><i class="dot" style="background:var(--c-${k})"></i><b>${label}${INST_STEM[INST]===k?'<small>yang diulik</small>':''}</b>
-      <button class="tg s" type="button" data-act="solo" aria-pressed="${m.solo}" aria-label="Solo ${label}">S</button>
-      <button class="tg m" type="button" data-act="mute" aria-pressed="${m.mute}" aria-label="Bisukan ${label}">M</button>
-      <input type="range" min="0" max="150" value="${Math.round(m.vol*100)}" data-act="vol" aria-label="Volume ${label}"></div>`;}).join('');
+  box.innerHTML=STEMS.map(([k])=>{const label=t('stem.'+k),m=mix[k],hear=audible(k),mine=INST_STEM[INST]===k;
+    const cap=k==='other'&&INST==='keys'?'--c-keys':STEM_CAP[k];
+    return `<div class="strip${hear?' on':''}${mine?' mine':''}" data-k="${k}" style="--cap:var(${cap})">
+      <i class="led" aria-hidden="true"></i>
+      <div class="sm"><button class="tg s" type="button" data-act="solo" aria-pressed="${m.solo}" aria-label="${t('soloA',{x:label})}">S</button><button class="tg m" type="button" data-act="mute" aria-pressed="${m.mute}" aria-label="${t('muteA',{x:label})}">M</button></div>
+      <div class="fader" role="slider" tabindex="0" aria-label="${t('volA',{x:label})}" aria-valuemin="0" aria-valuemax="150" aria-valuenow="${Math.round(m.vol*100)}" aria-valuetext="${Math.round(m.vol*100)}%">
+        <i class="ticks"></i><i class="slot"></i><i class="unity" style="bottom:${capPos(1)}"></i><i class="cap" style="bottom:${capPos(m.vol)}"></i></div>
+      <b class="name" title="${label}${mine?' '+t('mine'):''}">${t('stemS.'+k)}</b></div>`;}).join('');
 }
+function setFader(f,v){const k=f.closest('.strip').dataset.k;v=Math.round(Math.min(1.5,Math.max(0,v))*20)/20;mix[k].vol=v;
+  f.querySelector('.cap').style.bottom=capPos(v);f.setAttribute('aria-valuenow',Math.round(v*100));f.setAttribute('aria-valuetext',Math.round(v*100)+'%');
+  f.closest('.strip').classList.toggle('on',audible(k));}
 function audible(k){const anySolo=Object.values(mix).some(m=>m.solo);return !mix[k].mute&&(!anySolo||mix[k].solo)&&mix[k].vol>0;}
 function mixNeutral(){return Object.values(mix).every(m=>!m.mute&&!m.solo&&m.vol===1);}
 let mixTimer=0;
@@ -1488,7 +1767,7 @@ async function analyzeCurrent(startAt){
   try{
     for(let i=0;i<keys.length;i++){
       if(song.cache[keys[i]])continue;
-      await runAnalysis(keys[i],p=>overlay(`Mengulik ${INST_NAME[INST]}… ${Math.round(p*100)}%`,(i+p)/keys.length));
+      await runAnalysis(keys[i],p=>overlay(t('mAnalyzing',{i:instL(INST),p:Math.round(p*100)}),(i+p)/keys.length));
     }
   }finally{busy=false;}
   overlay(null);
@@ -1499,7 +1778,7 @@ async function analyzeCurrent(startAt){
   assignPos(track);computeRange(track);
   if(startAt!=null)viewT=startAt;
   rebuildAll();ui();render();
-  if(!track.notes.length&&!track.chords.length)msg('Belum ada nada atau chord yang terbaca. Coba rekaman yang lebih jelas.');
+  if(!track.notes.length&&!track.chords.length)msg(t('mNothing'));
 }
 
 /* ---------- tempo ---------- */
@@ -1543,7 +1822,7 @@ function updateHero(info){
   const T=tun(),c=info&&info.chord;
   el.chordbox.classList.toggle('idle',!(info&&info.cActive));
   setT('cName',c?chordLabel(c.id):'–');
-  const capoNote=INST==='gitar'&&CAPO&&c?`capo ${CAPO}: bentuk ${NOTE[((TPL[c.id].root+TR-CAPO)%12+12)%12]+TPL[c.id].suf}`:'';
+  const capoNote=INST==='gitar'&&CAPO&&c?t('capoShape',{n:CAPO,s:NOTE[((TPL[c.id].root+TR-CAPO)%12+12)%12]+TPL[c.id].suf}):'';
   setT('cSub',capoNote);
   const sk=(c?c.id:'none')+'|'+tunKeyNow()+'|'+TR+'|'+CAPO+'|'+INST;
   if(lastTxt.diag!==sk){lastTxt.diag=sk;
@@ -1552,22 +1831,22 @@ function updateHero(info){
   }
   if(!info||!info.note){
     el.info.classList.add('idle');setT('nName','–');
-    setT('state',live?'Mendengarkan':'Siap');setT('pos',track?'Mainkan atau putar lagunya':'Pilih instrumen, lalu upload lagu atau putar demo');setT('hz','— Hz');setT('alts','');
+    setT('state',t(live?'listening':'ready'));setT('pos',t(track?'idlePosTrack':'idlePos'));setT('hz','– Hz');setT('alts','');
     el.needle.style.left='50%';el.needle.classList.remove('off');setT('cents','0 cent');return;
   }
   const n=info.note,m=trNote(n.midi),name=nn(m);
   el.info.classList.toggle('idle',!info.active);
   const ang=angkaOf(m);
   setT('nName',name+oct(m));
-  setT('state',info.active?(INST==='vokal'?'Nada vokal':INST==='bass'?'Nada bass':'Nada melodi'):'Nada terakhir');
+  setT('state',t(info.active?(INST==='vokal'?'stVokal':INST==='bass'?'stBass':'stMel'):'stLast'));
   if(INST==='bass'||INST==='gitar'){
     if(n.pos){const s=T.names[n.pos.s];
-      setT('pos',(n.pos.f===0?`Senar <em>${s}</em> · dibunyikan lepas`:`Senar <em>${s}</em> · fret <em>${n.pos.f}</em>`)+(n.pos.oct?' <small>(oktaf digeser)</small>':''),true);
-    }else setT('pos','Di luar jangkauan senar');
-    setT('alts',n.alts&&n.alts.length?'Bisa juga: '+n.alts.slice(0,3).map(p=>`senar ${T.names[p.s]} fret ${p.f}`).join(' · '):'Cuma ada satu posisi untuk nada ini');
+      setT('pos',(n.pos.f===0?t('posOpen',{s}):t('posFret',{s,f:n.pos.f}))+(n.pos.oct?' <small>'+t('octShift')+'</small>':''),true);
+    }else setT('pos',t('outRange'));
+    setT('alts',n.alts&&n.alts.length?t('altsPre',{l:n.alts.slice(0,3).map(p=>t('altItem',{s:T.names[p.s],f:p.f})).join(', ')}):t('onePos'));
   }else{
-    setT('pos',ang?`Not <em>${ang.a}</em> · ${ang.s} <small>· do = ${NOTE[doPc()]}</small>`:`Nada <em>${name}${oct(m)}</em>`,true);
-    setT('alts',INST==='vokal'?'Jarum di bawah: seberapa pas nadamu (± cent)':'Tuts yang menyala ada di keyboard di bawah');
+    setT('pos',ang?t('posNot',{a:ang.a,s:ang.s,d:NOTE[doPc()]}):t('posNote',{n:name+oct(m)}),true);
+    setT('alts',t(INST==='vokal'?'altVokal':'altKeys'));
   }
   const useF=info.active&&info.midiF!=null&&Math.abs(info.midiF-n.midi)<0.6;
   const mf=useF?info.midiF:n.midi;
@@ -1590,67 +1869,67 @@ function rr(g,x,y,w,h,r){g.beginPath();if(g.roundRect)g.roundRect(x,y,w,h,r);els
 function drawRoll(T,info){
   const g=fit(roll),W=roll._w,H=roll._h;
   g.clearRect(0,0,W,H);
-  const bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#101016');bg.addColorStop(1,'#07070a');g.fillStyle=bg;g.fillRect(0,0,W,H);
+  const bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#181a1d');bg.addColorStop(1,'#121315');g.fillStyle=bg;g.fillRect(0,0,W,H);
   const pps=ppsOf(W),frac=live?0.82:0.5,t0=T-frac*W/pps,tEnd=t0+W/pps,X=t=>(t-t0)*pps;
   const laneH=34,padT=laneH+22,padB=24,h=H-padT-padB;const{lo,hi}=rangeOf();
   const Y=m=>padT+(hi-m)/(hi-lo)*h,pxs=h/(hi-lo);
   // area ulang A-B
   if(loop.a!=null){const xa=X(loop.a),xb=loop.b!=null?X(loop.b):xa+2;g.fillStyle=loop.on?GA(.09):'rgba(255,255,255,.04)';g.fillRect(xa,0,Math.max(2,xb-xa),H);
     g.fillStyle=GA(.8);g.fillRect(Math.round(xa),0,1.5,H);if(loop.b!=null)g.fillRect(Math.round(xb),0,1.5,H);
-    g.font='700 10px "JetBrains Mono", monospace';g.textBaseline='top';g.fillText('A',xa+4,laneH+10);if(loop.b!=null)g.fillText('B',xb+4,laneH+10);}
-  g.fillStyle='rgba(255,255,255,.025)';g.fillRect(0,0,W,laneH+8);
+    g.font='700 12px "Sofia Sans Condensed", "Arial Narrow", sans-serif';g.textBaseline='top';g.fillText('A',xa+4,laneH+10);if(loop.b!=null)g.fillText('B',xb+4,laneH+10);}
+  g.fillStyle='rgba(0,0,0,.22)';g.fillRect(0,0,W,laneH+8);g.fillStyle='rgba(236,230,214,.08)';g.fillRect(0,laneH+8,W,1);
   if(track){
     const C=track.chords;let cs=idxAt(C,t0);if(cs<0)cs=0;
-    g.font='800 15px "Bricolage Grotesque", system-ui, sans-serif';g.textBaseline='middle';g.textAlign='left';
+    g.font='800 17px "Sofia Sans Condensed", "Arial Narrow", sans-serif';g.textBaseline='middle';g.textAlign='left';
     for(let i=cs;i<C.length;i++){const c=C[i];if(c.t0>tEnd)break;if(c.t1<t0)continue;
       const x0=X(c.t0)+1.5,x1=X(c.t1)-1.5,on=info&&info.ci===i&&info.cActive,label=chordLabel(c.id);
-      rr(g,x0,6,Math.max(2,x1-x0),laneH-4,8);g.fillStyle=on?GA(.95):GA(.13);g.fill();
-      if(!on){g.strokeStyle=GA(.35);g.lineWidth=1;g.stroke();}
-      const tw=g.measureText(label).width;if(x1-x0>tw+10){g.fillStyle=on?ACCINK:'#f2f1f8';g.fillText(label,Math.min(Math.max(x0+8,8),x1-tw-8),6+(laneH-4)/2+1);}
+      rr(g,x0,7,Math.max(2,x1-x0),laneH-6,2);g.fillStyle=on?ACC:'#e6e1d4';g.fill();
+      g.fillStyle='rgba(0,0,0,.18)';g.fillRect(x0,laneH-1,Math.max(2,x1-x0),2);
+      const tw=g.measureText(label).width;if(x1-x0>tw+10){g.fillStyle=on?ACCINK:'#22252b';g.fillText(label,Math.min(Math.max(x0+8,8),x1-tw-8),7+(laneH-6)/2+1);}
     }
   }
-  g.font='500 10px "JetBrains Mono", monospace';g.textBaseline='middle';g.textAlign='left';
+  g.font='500 12px "Sofia Sans Condensed", "Arial Narrow", sans-serif';g.textBaseline='middle';g.textAlign='left';
   for(let m=Math.ceil(lo);m<=Math.floor(hi);m++){
     const nm=nn(m+TR),nat=nm.length===1,y=Math.round(Y(m))+.5;
-    g.strokeStyle=nm==='C'?'rgba(200,200,230,.15)':nat?'rgba(200,200,230,.06)':'rgba(200,200,230,.025)';
+    g.strokeStyle=nm==='C'?'rgba(236,230,214,.16)':nat?'rgba(236,230,214,.06)':'rgba(236,230,214,.022)';
     g.lineWidth=1;g.beginPath();g.moveTo(0,y);g.lineTo(W,y);g.stroke();
-    if(nat&&(pxs>=7||nm==='C'||nm==='E'||nm==='A')){g.fillStyle='rgba(180,180,205,.5)';g.fillText(nm+oct(m+TR),6,y);}
+    if(nat&&(pxs>=7||nm==='C'||nm==='E'||nm==='A')){g.fillStyle='rgba(236,230,214,.48)';g.fillText(nm+oct(m+TR),6,y);}
   }
-  g.textBaseline='alphabetic';g.fillStyle='rgba(180,180,205,.42)';
+  g.textBaseline='alphabetic';g.fillStyle='rgba(236,230,214,.4)';
   for(let s=Math.ceil(Math.max(0,t0));s<=tEnd;s++){const x=Math.round(X(s))+.5;g.fillRect(x,H-padB+4,1,5);if(s%2===0)g.fillText(fmt(s),x+4,H-6);}
   if(!track)return;
   const N=track.notes;let start=idxAt(N,t0-0.5);if(start<0)start=0;
   let prev=start>0?N[start-1]:null;const labels=[];
   for(let i=start;i<N.length;i++){const n=N[i];if(n.t0>tEnd)break;
     const x0=X(n.t0),x1=Math.max(X(n.t1),x0+2),y=Y(n.midi);
-    if(prev&&n.t0-prev.t1<0.45){g.strokeStyle='rgba(255,250,240,.38)';g.lineWidth=1.2;g.shadowBlur=0;g.beginPath();g.moveTo(X(prev.t1),Y(prev.midi));g.lineTo(x0,y);g.stroke();}
-    g.strokeStyle=ACC;g.lineWidth=3.2;g.lineCap='round';g.shadowColor=ACC;g.shadowBlur=10;g.beginPath();g.moveTo(x0,y);g.lineTo(x1,y);g.stroke();
-    g.fillStyle=ACC;g.beginPath();g.arc(x0,y,6.5,0,Math.PI*2);g.fill();g.shadowBlur=0;prev=n;
+    if(prev&&n.t0-prev.t1<0.45){g.strokeStyle='rgba(236,230,214,.3)';g.lineWidth=1.2;g.beginPath();g.moveTo(X(prev.t1),Y(prev.midi));g.lineTo(x0,y);g.stroke();}
+    g.fillStyle=ACC;rr(g,x0-2,y-4,x1-x0+4,8,2);g.fill();
+    g.fillStyle='#121315';g.fillRect(x0-2,y-4,2.5,8);prev=n;
     const ang=(INST==='vokal'||INST==='keys')?angkaOf(trNote(n.midi)):null;
     labels.push({x:x0,y,i,text:ang?ang.a:nn(trNote(n.midi))+oct(trNote(n.midi))});
   }
   const actI=info&&info.active?info.idx:-1;
-  g.font='600 10px "JetBrains Mono", monospace';g.textBaseline='middle';g.textAlign='center';
+  g.font='600 12px "Sofia Sans Condensed", "Arial Narrow", sans-serif';g.textBaseline='middle';g.textAlign='center';
   const placed=[];
   for(const L of labels){if(L.i===actI)continue;const tw=g.measureText(L.text).width,bx=L.x-tw/2-3,bw=tw+6;let ly=L.y-14;if(ly<padT+4)ly=L.y+14;
-    if(placed.some(q=>bx<q.r+3&&bx+bw>q.l-3&&Math.abs(q.y-ly)<14))continue;placed.push({l:bx,r:bx+bw,y:ly});g.fillStyle='rgba(250,245,255,.6)';g.fillText(L.text,L.x,ly+.5);}
+    if(placed.some(q=>bx<q.r+3&&bx+bw>q.l-3&&Math.abs(q.y-ly)<14))continue;placed.push({l:bx,r:bx+bw,y:ly});g.fillStyle='rgba(236,230,214,.62)';g.fillText(L.text,L.x,ly+.5);}
   g.textAlign='left';
   const F=track.frames;if(F.length){let fi=frameAt(t0-0.05);if(fi<0)fi=0;
-    g.strokeStyle='rgba(255,255,255,.3)';g.lineWidth=1.2;g.beginPath();let pen=false;
+    g.strokeStyle='rgba(236,230,214,.26)';g.lineWidth=1.2;g.beginPath();let pen=false;
     for(let i=fi;i<F.length;i++){const f=F[i];if(f.t>tEnd)break;if(f.midi==null||f.midi<lo-1||f.midi>hi+1){pen=false;continue;}const x=X(f.t),y=Y(f.midi);if(pen)g.lineTo(x,y);else g.moveTo(x,y);pen=true;}
     g.stroke();}
   const xp=X(T);
-  if(!live){g.fillStyle='rgba(7,7,10,.4)';g.fillRect(xp,laneH+8,W-xp,H);}
-  g.strokeStyle=GA(.55);g.lineWidth=1;g.beginPath();g.moveTo(Math.round(xp)+.5,0);g.lineTo(Math.round(xp)+.5,H);g.stroke();
+  if(!live){g.fillStyle='rgba(18,19,21,.45)';g.fillRect(xp,laneH+9,W-xp,H);}
+  g.fillStyle='#ece6d6';g.fillRect(Math.round(xp)-1,0,2,H);g.beginPath();g.moveTo(xp-6,0);g.lineTo(xp+6,0);g.lineTo(xp,8);g.closePath();g.fill();
   if(info&&info.active){
     const y=clamp(Y(info.note.midi),padT,padT+h);
-    const rg=g.createRadialGradient(xp,y,0,xp,y,40);rg.addColorStop(0,GA(.55));rg.addColorStop(1,GA(0));g.fillStyle=rg;g.beginPath();g.arc(xp,y,40,0,Math.PI*2);g.fill();
-    g.shadowColor=ACC;g.shadowBlur=24;g.fillStyle=ACC;g.beginPath();g.arc(xp,y,16,0,Math.PI*2);g.fill();g.shadowBlur=0;
-    g.fillStyle='#ffffff';g.globalAlpha=.85;g.beginPath();g.arc(xp,y,8,0,Math.PI*2);g.fill();g.globalAlpha=1;
+    g.fillStyle='#121315';g.beginPath();g.arc(xp,y,13,0,Math.PI*2);g.fill();
+    g.fillStyle=ACC;g.beginPath();g.arc(xp,y,10,0,Math.PI*2);g.fill();
+    g.fillStyle='#ece6d6';g.beginPath();g.arc(xp,y,3.5,0,Math.PI*2);g.fill();
     const m=trNote(info.note.midi),ang=(INST==='vokal'||INST==='keys')?angkaOf(m):null,txt=nn(m)+oct(m)+(ang?'  '+ang.a:'');
-    g.font='800 17px "Bricolage Grotesque", system-ui, sans-serif';g.textBaseline='middle';
-    const tw=g.measureText(txt).width;let tx=xp+26;if(tx+tw>W-6)tx=xp-26-tw;
-    g.shadowColor='rgba(0,0,0,.85)';g.shadowBlur=8;g.fillStyle='#fffaf2';g.fillText(txt,tx,y+1);g.shadowBlur=0;
+    g.font='800 18px "Sofia Sans Condensed", "Arial Narrow", sans-serif';g.textBaseline='middle';
+    const tw=g.measureText(txt).width;let tx=xp+22;if(tx+tw+12>W-6)tx=xp-22-tw-12;
+    g.fillStyle='#e6e1d4';rr(g,tx,y-12,tw+12,24,2);g.fill();g.fillStyle='#22252b';g.fillText(txt,tx+6,y+1);
   }
 }
 function drawFret(info){
@@ -1675,25 +1954,25 @@ function drawFret(info){
   for(let k=1;k<=mx;k++){const x=Math.round(FX(k))+.5;g.strokeStyle='rgba(190,185,175,.75)';g.lineWidth=2;g.beginPath();g.moveTo(x,bt+1);g.lineTo(x,bb-1);g.stroke();}
   if(CAPO&&INST==='gitar'&&CAPO<=mx){const x=FX(CAPO)-3;g.fillStyle='rgba(30,30,38,.9)';rr(g,x-5,bt-4,10,boardH+8,4);g.fill();g.strokeStyle=GA(.7);g.lineWidth=1.5;g.stroke();}
   g.fillStyle='#ece8dc';g.fillRect(nutX-4,bt,5,boardH);
-  g.font='600 10px "JetBrains Mono", monospace';g.textAlign='center';g.textBaseline='alphabetic';
+  g.font='600 12px "Sofia Sans Condensed", "Arial Narrow", sans-serif';g.textAlign='center';g.textBaseline='alphabetic';
   for(let k=1;k<=mx;k++){const inl=[3,5,7,9,12,15,17,19,21].includes(k);g.fillStyle=inl?'rgba(235,230,215,.75)':'rgba(170,165,150,.4)';g.fillText(String(k),PX(k),H-8);}
   g.fillStyle='rgba(170,165,150,.4)';g.fillText('0',openX,H-8);
   const t=performance.now()/1000;
   for(let s=0;s<ns;s++){const y=RY(s),act=cur&&cur.s===s&&info.active;
     g.lineWidth=ns>4?0.9+(ns-1-s)*0.32:1.4+(ns-1-s)*0.55;g.strokeStyle=act?GA(.95):(ns>4&&s>=3?'rgba(225,225,230,.6)':'rgba(215,195,160,.65)');
-    g.shadowColor=ACC;g.shadowBlur=act?10:0;g.beginPath();
+    g.beginPath();
     if(act&&(player.playing||live)){g.moveTo(openX-6,y);for(let x=openX-6;x<=endX;x+=6){const u=(x-nutX)/(endX-nutX);g.lineTo(x,y+Math.sin(u*Math.PI)*1.5*Math.sin(t*40));}}
     else{g.moveTo(openX-6,y);g.lineTo(endX,y);}
-    g.stroke();g.shadowBlur=0;
-    g.fillStyle=act?ACC:'rgba(190,185,170,.85)';g.textAlign='left';g.textBaseline='middle';g.font='700 12px "JetBrains Mono", monospace';g.fillText(T.names[s],2,y);}
-  if(shape){g.textAlign='center';g.textBaseline='middle';g.font='700 10px "JetBrains Mono", monospace';
+    g.stroke();
+    g.fillStyle=act?ACC:'rgba(190,185,170,.85)';g.textAlign='left';g.textBaseline='middle';g.font='700 12px "Sofia Sans Condensed", "Arial Narrow", sans-serif';g.fillText(T.names[s],2,y);}
+  if(shape){g.textAlign='center';g.textBaseline='middle';g.font='700 12px "Sofia Sans Condensed", "Arial Narrow", sans-serif';
     shape.forEach((f,s)=>{const y=RY(s);if(f<0){g.fillStyle='rgba(242,241,248,.45)';g.fillText('×',openX,y);return;}const ff=f+CAPO;if(f===0&&CAPO)return;const x=PX(ff);g.strokeStyle='rgba(242,241,248,.7)';g.lineWidth=2;rr(g,x-8,y-8,16,16,4);g.stroke();});}
   if(!track||!n)return;
   for(const p of n.alts||[]){if(p.f>mx)continue;g.strokeStyle=info.active?GA(.6):GA(.28);g.lineWidth=2;g.beginPath();g.arc(PX(p.f),RY(p.s),8.5,0,Math.PI*2);g.stroke();}
   if(cur&&cur.f<=mx){const x=PX(cur.f),y=RY(cur.s),a=info.active?1:0.45;
-    if(info.active){const rg=g.createRadialGradient(x,y,0,x,y,28);rg.addColorStop(0,GA(.6));rg.addColorStop(1,GA(0));g.fillStyle=rg;g.beginPath();g.arc(x,y,28,0,Math.PI*2);g.fill();}
+    if(info.active){g.fillStyle='rgba(0,0,0,.45)';g.beginPath();g.arc(x,y+2,12.5,0,Math.PI*2);g.fill();}
     g.globalAlpha=a;g.fillStyle=ACC;g.beginPath();g.arc(x,y,11.5,0,Math.PI*2);g.fill();
-    g.fillStyle='#111';g.font='800 10.5px "JetBrains Mono", monospace';g.textAlign='center';g.textBaseline='middle';g.fillText(nn(trNote(n.midi)),x,y+0.5);g.globalAlpha=1;}
+    g.fillStyle='#111';g.font='800 12.5px "Sofia Sans Condensed", "Arial Narrow", sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(nn(trNote(n.midi)),x,y+0.5);g.globalAlpha=1;}
 }
 function drawPiano(info){
   const box=$('#fbScroll'),cw=box.clientWidth;
@@ -1708,15 +1987,15 @@ function drawPiano(info){
   const xOf={};whites.forEach((m,i)=>xOf[m]=i*kw);
   // tuts putih
   whites.forEach((m,i)=>{const x=i*kw,isC=m===cur,inC=chordPcs.includes(m%12);
-    g.fillStyle='#ecebf3';rr(g,x+1,0,kw-2,H-2,5);g.fill();
-    if(isC||inC||recent.has(m)){g.fillStyle=isC?ACC:inC?`rgba(${ACCRGB},.45)`:`rgba(${ACCRGB},.2)`;rr(g,x+1,0,kw-2,H-2,5);g.fill();}
-    if(NOTE[m%12]==='C'){g.fillStyle=isC?'#111':'#6a6980';g.font='600 9.5px "JetBrains Mono", monospace';g.textAlign='center';g.textBaseline='alphabetic';g.fillText('C'+oct(m),x+kw/2,H-8);}
+    g.fillStyle='#efeadc';rr(g,x+1,0,kw-2,H-2,3);g.fill();
+    if(isC||inC||recent.has(m)){g.fillStyle=isC?ACC:inC?`rgba(${ACCRGB},.45)`:`rgba(${ACCRGB},.2)`;rr(g,x+1,0,kw-2,H-2,3);g.fill();}
+    if(NOTE[m%12]==='C'){g.fillStyle=isC?'#16171a':'#7a766c';g.font='600 11.5px "Sofia Sans Condensed", "Arial Narrow", sans-serif';g.textAlign='center';g.textBaseline='alphabetic';g.fillText('C'+oct(m),x+kw/2,H-8);}
   });
   // tuts hitam
   for(let m=lo;m<=hi;m++){if(NOTE[m%12].length===1)continue;const left=xOf[m-1];if(left==null)continue;const x=left+kw*0.66,bw=kw*0.66,isC=m===cur,inC=chordPcs.includes(m%12);
-    g.fillStyle=isC?ACC:inC?`rgba(${ACCRGB},.7)`:'#1b1b23';rr(g,x,0,bw,H*0.6,4);g.fill();}
+    g.fillStyle=isC?ACC:inC?`rgba(${ACCRGB},.7)`:'#1e1f22';rr(g,x,0,bw,H*0.6,3);g.fill();}
   if(cur!=null){const isW=NOTE[cur%12].length===1;let x=isW?xOf[cur]+kw/2:(xOf[cur-1]!=null?xOf[cur-1]+kw:null);
-    if(x!=null){const ang=angkaOf(cur);g.fillStyle=isW?'#111':'#111';g.font='800 12px "Bricolage Grotesque", system-ui, sans-serif';g.textAlign='center';g.textBaseline='middle';
+    if(x!=null){const ang=angkaOf(cur);g.fillStyle='#16171a';g.font='800 12px "Sofia Sans Condensed", "Arial Narrow", sans-serif';g.textAlign='center';g.textBaseline='middle';
       g.fillText(ang?ang.a:nn(cur),x,isW?H*0.78:H*0.45);
       if(box.scrollWidth>box.clientWidth){const want=x-box.clientWidth/2;if(Math.abs(box.scrollLeft-want)>box.clientWidth*0.35)box.scrollLeft=want;}}}
 }
@@ -1739,7 +2018,7 @@ function rebuildTab(force){
   const isNA=INST==='keys'||INST==='vokal';
   const sig=(track?track.notes.length+'|'+(track.notes.length?track.notes[track.notes.length-1].midi:''):'none')+'|'+tunKeyNow()+'|'+INST+'|'+TR;
   if(!force&&sig===tabSig)return;tabSig=sig;hlIdx=-1;
-  $('#tabCount').textContent=(track?track.notes.length:0)+' nada';
+  $('#tabCount').textContent=t('noteN',{n:track?track.notes.length:0});
   tabEl.hidden=isNA;naEl.hidden=!isNA;
   if(!track){tabEl.textContent='';naEl.innerHTML='';return;}
   if(!isNA){tabEl.innerHTML=tabRows(track.notes,true);return;}
@@ -1772,10 +2051,10 @@ const progEl=$('#prog');let progSig='',progHL=-1;
 function rebuildProg(force){
   const C=track?track.chords:[];const sig=C.length+'|'+(C.length?C[C.length-1].id:'')+'|'+TR;
   if(!force&&sig===progSig)return;progSig=sig;progHL=-1;
-  const k=track&&track.key&&track.key.r>0.5&&C.length?` · kunci ${NOTE[((track.key.tonic+TR)%12+12)%12]}${track.key.minor?'m':''}`:'';
-  const b=song&&song.bpm?` · ±${song.bpm} BPM`:'';
-  $('#chordCount').textContent=C.length+' chord'+k+b;
-  if(!C.length){progEl.innerHTML='<p class="empty">Belum ada chord yang terbaca.</p>';return;}
+  const k=track&&track.key&&track.key.r>0.5&&C.length?t('keyOf',{k:NOTE[((track.key.tonic+TR)%12+12)%12]+(track.key.minor?'m':'')}):'';
+  const b=song&&song.bpm?`, ±${song.bpm} BPM`:'';
+  $('#chordCount').textContent=t('chordN',{n:C.length})+k+b;
+  if(!C.length){progEl.innerHTML='<p class="empty">'+t('noChord')+'</p>';return;}
   progEl.innerHTML=C.map((c,i)=>`<button class="cc" type="button" data-i="${i}"><b>${chordLabel(c.id)}</b><small>${fmt(c.t0)}</small></button>`).join('');
 }
 function updateProgHL(info){const i=info&&info.cActive?info.ci:-1;if(i===progHL)return;progHL=i;
@@ -1792,7 +2071,7 @@ function midiBytes(){
   const name=s=>{const b=Array.from(new TextEncoder().encode(s));return[0xff,0x03,b.length,...b];};
   const us=Math.round(60000000/bpm);
   const t0=trk([{t:0,o:0,b:[0xff,0x51,3,(us>>16)&255,(us>>8)&255,us&255]},{t:0,o:1,b:[0xff,0x58,4,4,2,24,8]}]);
-  const mel=[{t:0,o:0,b:name('Melodi '+INST_NAME[INST])}],prog={bass:33,gitar:25,keys:0,vokal:52}[INST];mel.push({t:0,o:0,b:[0xc0,prog]});
+  const mel=[{t:0,o:0,b:name(t('midiMel',{i:instL(INST)}))}],prog={bass:33,gitar:25,keys:0,vokal:52}[INST];mel.push({t:0,o:0,b:[0xc0,prog]});
   for(const n of track.notes){const m=clamp(trNote(n.midi),0,127);mel.push({t:tk(n.t0),o:2,b:[0x90,m,96]},{t:tk(n.t1),o:1,b:[0x80,m,0]});}
   const ch=[{t:0,o:0,b:name('Chord')},{t:0,o:0,b:[0xc1,4]}];
   for(const c of track.chords){const T=TPL[c.id],r=48+((T.root+TR)%12+12)%12;for(const iv of T.iv){const m=r+iv;ch.push({t:tk(c.t0),o:2,b:[0x91,m,70]},{t:tk(c.t1),o:1,b:[0x81,m,0]});}}
@@ -1805,13 +2084,13 @@ const scrub=$('#scrub');let scrubbing=false;
 function ui(){
   const has=!!player.dur&&!live;
   $('#playBtn').disabled=!has;$('#icPlay').hidden=player.playing;$('#icPause').hidden=!player.playing;
-  $('#playBtn').setAttribute('aria-label',player.playing?'Jeda':'Putar');
+  $('#playBtn').setAttribute('aria-label',t(player.playing?'pause':'play'));
   scrub.disabled=!track||!!live;
   $$('#speeds .chip').forEach(c=>{c.disabled=!has;c.setAttribute('aria-pressed',String(+c.dataset.r===player.rate));});
   for(const id of['setA','setB','loopBtn'])$('#'+id).disabled=!has;
   $('#loopBtn').setAttribute('aria-pressed',String(loop.on));
   $('#setA').textContent=loop.a!=null?'A '+fmt(loop.a):'A';$('#setB').textContent=loop.b!=null?'B '+fmt(loop.b):'B';
-  $('#micBtn').classList.toggle('on',!!live);$('#micLabel').textContent=live?'Stop mic':'Dengar dari mic';
+  $('#micBtn').classList.toggle('on',!!live);$('#micLabel').textContent=t(live?'micOff':'micOn');
   $('#gateRow').hidden=!live;
 }
 function updateTransport(T){
@@ -1833,16 +2112,16 @@ function setInst(v,reanalyze){
   $$('.inst').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.inst===v)));
   const fr=v==='bass'||v==='gitar';
   $('#tunField').hidden=!fr;$('#capoBox').hidden=v!=='gitar';
-  if(fr){const sel=$('#tuning'),T=TUNINGS[fretInst()];sel.innerHTML=Object.entries(T).map(([k,t])=>`<option value="${k}">${t.label}</option>`).join('');sel.value=tunSel[fretInst()];}
+  if(fr){const sel=$('#tuning'),T=TUNINGS[fretInst()];sel.innerHTML=Object.entries(T).map(([k,o])=>`<option value="${k}">${t('tun.'+k)} ${o.label.replace(/^[^(]*/,'')}</option>`).join('');sel.value=tunSel[fretInst()];}
   fret.hidden=!fr;piano.hidden=fr;
-  $('#viewTitle').textContent=fr?'Fretboard':'Keyboard';
-  $('#viewInfo').textContent=fr?'Atas = senar paling tinggi':'Geser ke samping kalau tidak muat';
-  $('#legend').innerHTML=fr?`<span><i class="ldot"></i>Nada sekarang</span><span><i class="lring"></i>Posisi lain, nadanya sama</span>${v==='gitar'?'<span><i class="lsq"></i>Bentuk chord yang bunyi</span>':''}`
-    :`<span><i class="ldot"></i>Nada sekarang</span><span><i class="lring"></i>Nada chord yang bunyi</span>`;
+  $('#viewTitle').textContent=t(fr?'fretT':'keysT');
+  $('#viewInfo').textContent=t(fr?'fretInfo':'keysInfo');
+  $('#legend').innerHTML=fr?`<span><i class="ldot"></i>${t('lgNow')}</span><span><i class="lring"></i>${t('lgOther')}</span>${v==='gitar'?`<span><i class="lsq"></i>${t('lgShape')}</span>`:''}`
+    :`<span><i class="ldot"></i>${t('lgNow')}</span><span><i class="lring"></i>${t('lgChord')}</span>`;
   $('#cDiag').hidden=v!=='gitar';$('#cTones').hidden=!(v==='keys'||v==='vokal');
-  $('#tabTitle').textContent=v==='bass'?'TAB bass':v==='gitar'?'TAB melodi':'Not angka';
-  $('#tabNote').textContent=fr?'Angka dalam kurung, misalnya (3), artinya nadanya di luar jangkauan senar dan ditulis satu oktaf digeser.':'Titik di atas angka = oktaf lebih tinggi, titik di bawah = lebih rendah. Garis | = pergantian chord.';
-  $('#mixMinus').textContent='Minus one ('+INST_NAME[v]+')';$('#mixOnly').textContent='Hanya '+INST_NAME[v];
+  $('#tabTitle').textContent=t(v==='bass'?'tabBass':v==='gitar'?'tabMel':'tabNA');
+  $('#tabNote').textContent=t(fr?'tabNoteF':'tabNoteNA');
+  $('#mixMinus').textContent=t('mixMinus',{i:instL(v)});$('#mixOnly').textContent=t('mixOnly',{i:instL(v)});
   Object.keys(lastTxt).forEach(k=>delete lastTxt[k]);
   renderMixer();
   if(live){restartLiveForInst();}
@@ -1855,10 +2134,10 @@ function setInst(v,reanalyze){
 const gateVal=()=>{const v=+$('#gate').value/100;return 0.05*Math.pow(1-v,2)+0.0015;};
 async function startMic(){
   if(busy)return;player.unload();msg('');
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){msg('Browser ini tidak memberi akses mikrofon di sini. Buka Ngulik Studio dari link GitHub Pages untuk mode mic.');ui();return;}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){msg(t('mNoMic'));ui();return;}
   let stream;
   try{ensureCtx();await ctx.resume();stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});}
-  catch(e){msg('Mikrofon diblok. Izinkan akses mic di browser, lalu coba lagi.');ui();return;}
+  catch(e){msg(t('mMicBlocked'));ui();return;}
   song=null;$('#sepPanel').hidden=true;
   const src=ctx.createMediaStreamSource(stream),an=ctx.createAnalyser();an.fftSize=16384;an.smoothingTimeConstant=0;src.connect(an);
   live={stream,src,an,raw:new Float32Array(16384),wake:null};
@@ -1868,10 +2147,10 @@ async function startMic(){
 function restartLiveForInst(){
   if(!live)return;const sr=ctx.sampleRate,low=INST==='bass';
   const f=Math.max(1,Math.round(sr/(low?11025:22050))),N=1024,f4=Math.max(1,Math.round(sr/11025));let CN=4096;while(CN*f4>16384)CN>>=1;
-  track={source:'mic',name:'Mic · live',frames:[],notes:[],chords:[],duration:0,key:null};
+  track={source:'mic',name:t('micLive'),frames:[],notes:[],chords:[],duration:0,key:null};
   Object.assign(live,{f,x:new Float32Array(N),det:low?makeDetector(sr/f,N,27,460,0.3):makeDetector(sr/f,N),f4,CN,x4:new Float32Array(CN),sr4:sr/f4,
     t0:ctx.currentTime,seg:makeSegmenter(track,gateVal),nCount:0,tickN:0,ema:new Float32Array(12),bema:new Float32Array(12),cand:null,curC:null,chAcc:new Float32Array(12)});
-  $('#srcName').textContent='Mic · live';rebuildAll();ui();
+  $('#srcName').textContent=t('micLive');rebuildAll();ui();
 }
 function processLive(){
   const L=live;L.an.getFloatTimeDomainData(L.raw);
@@ -1898,7 +2177,7 @@ function stopMic(){
   if(!live)return;const L=live;live=null;
   try{L.stream.getTracks().forEach(t=>t.stop());L.src.disconnect();}catch(e){}
   try{L.wake&&L.wake.release();}catch(e){}
-  L.seg.finish();assignPos(track);computeRange(track);viewT=track.duration;track.name='Rekaman mic · '+fmt(track.duration);
+  L.seg.finish();assignPos(track);computeRange(track);viewT=track.duration;track.name=t('micRec',{t:fmt(track.duration)});
   $('#srcName').textContent=track.name;rebuildAll();ui();render();
 }
 
@@ -1910,15 +2189,29 @@ $('#fileBtn').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.
 $('#file').addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';loadFile(f);});
 $('#demoBtn').addEventListener('click',loadDemo);
 $$('[data-kind]').forEach(b=>b.addEventListener('click',()=>{askKind=b.dataset.kind;$$('[data-kind]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
-  $('#methodBox').hidden=askKind!=='band';$('#sepGo').disabled=false;$('#sepGo').textContent=askKind==='band'?'Pisahkan & ulik':'Mulai ulik';}));
+  $('#methodBox').hidden=askKind!=='band';$('#sepGo').disabled=false;$('#sepGo').textContent=t(askKind==='band'?'goBand':'goSingle');}));
 $$('[data-method]').forEach(b=>b.addEventListener('click',()=>{askMethod=b.dataset.method;store.set('ns.method',askMethod);$$('[data-method]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));}));
 $('#sepGo').addEventListener('click',()=>{if(!song||busy)return;
   if(askKind==='single'){song.kind='single';song.stems=null;song.cache={};showSingle();loadPlayback();analyzeCurrent(0);}
   else if(askKind==='band')startSeparation(askMethod);});
 $('#toBand').addEventListener('click',()=>{showAsk();$('[data-kind="band"]').click();});
 $('#sepAgain').addEventListener('click',()=>{if(!busy)startSeparation('ai');});
-$('#mixer').addEventListener('click',e=>{const b=e.target.closest('.tg');if(!b)return;const k=b.closest('.mrow').dataset.k;mix[k][b.dataset.act]=!mix[k][b.dataset.act];mixChanged();});
-$('#mixer').addEventListener('input',e=>{if(e.target.dataset.act!=='vol')return;const k=e.target.closest('.mrow').dataset.k;mix[k].vol=+e.target.value/100;clearTimeout(mixTimer);mixTimer=setTimeout(()=>{renderMixer();loadPlayback();},300);});
+$('#mixer').addEventListener('click',e=>{const b=e.target.closest('.tg');if(!b)return;const k=b.closest('.strip').dataset.k;mix[k][b.dataset.act]=!mix[k][b.dataset.act];mixChanged();});
+{ let drag=null;const mixer=$('#mixer');
+  const volAt=(f,y)=>{const r=f.getBoundingClientRect();return (r.bottom-10-y)/(r.height-20)*1.5;};
+  const settle=()=>{clearTimeout(mixTimer);mixTimer=setTimeout(()=>{renderMixer();loadPlayback();},260);};
+  mixer.addEventListener('pointerdown',e=>{const f=e.target.closest('.fader');if(!f)return;e.preventDefault();
+    const capR=f.querySelector('.cap').getBoundingClientRect(),onCap=e.clientY>=capR.top-6&&e.clientY<=capR.bottom+6;
+    drag={f,id:e.pointerId,off:onCap?e.clientY-(capR.top+capR.height/2):0};f.setPointerCapture(e.pointerId);clearTimeout(mixTimer);
+    setFader(f,volAt(f,e.clientY-drag.off));});
+  mixer.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;setFader(drag.f,volAt(drag.f,e.clientY-drag.off));});
+  const end=e=>{if(!drag||e.pointerId!==drag.id)return;drag=null;settle();};
+  mixer.addEventListener('pointerup',end);mixer.addEventListener('pointercancel',end);
+  mixer.addEventListener('dblclick',e=>{const f=e.target.closest('.fader');if(!f)return;setFader(f,1);settle();});
+  mixer.addEventListener('keydown',e=>{const f=e.target.closest('.fader');if(!f)return;const k=f.closest('.strip').dataset.k,v=mix[k].vol;
+    const nv={ArrowUp:v+.05,ArrowRight:v+.05,ArrowDown:v-.05,ArrowLeft:v-.05,PageUp:v+.25,PageDown:v-.25,Home:0,End:1.5}[e.key];
+    if(nv==null)return;e.preventDefault();setFader(f,nv);clearTimeout(mixTimer);mixTimer=setTimeout(loadPlayback,400);});
+}
 $('#mixAll').addEventListener('click',()=>{for(const k in mix)mix[k]={vol:1,mute:false,solo:false};mixChanged();});
 $('#mixMinus').addEventListener('click',()=>{for(const k in mix)mix[k]={vol:1,mute:k===INST_STEM[INST],solo:false};mixChanged();});
 $('#mixOnly').addEventListener('click',()=>{for(const k in mix)mix[k]={vol:1,mute:false,solo:k===INST_STEM[INST]};mixChanged();});
@@ -1930,21 +2223,21 @@ $('#loopBtn').addEventListener('click',()=>{if(loop.a==null){loop.a=Math.max(0,c
 scrub.addEventListener('input',()=>{scrubbing=true;viewT=+scrub.value;if(player.dur)player.seek(viewT);render();});
 scrub.addEventListener('change',()=>{scrubbing=false;});
 progEl.addEventListener('click',e=>{const b=e.target.closest('.cc');if(!b||!track||live)return;const c=track.chords[+b.dataset.i];if(!c)return;viewT=c.t0+0.02;if(player.dur)player.seek(viewT);render();});
-const relabel=()=>{Object.keys(lastTxt).forEach(k=>delete lastTxt[k]);assignPos(track);$('#trVal').textContent='Transpose '+(TR>0?'+':'')+TR;$('#capoVal').textContent=CAPO?'Capo '+CAPO:'Tanpa capo';rebuildAll();render();};
+const relabel=()=>{Object.keys(lastTxt).forEach(k=>delete lastTxt[k]);assignPos(track);$('#trVal').textContent=t('trVal',{n:(TR>0?'+':'')+TR});$('#capoVal').textContent=CAPO?t('capoVal',{n:CAPO}):t('noCapo');rebuildAll();render();};
 $('#trUp').addEventListener('click',()=>{TR=Math.min(11,TR+1);relabel();});
 $('#trDown').addEventListener('click',()=>{TR=Math.max(-11,TR-1);relabel();});
 $('#capoUp').addEventListener('click',()=>{CAPO=Math.min(9,CAPO+1);relabel();});
 $('#capoDown').addEventListener('click',()=>{CAPO=Math.max(0,CAPO-1);relabel();});
-function copyBtn(id,getText,label){const b=$(id);b.addEventListener('click',()=>{const txt=getText();if(!txt){b.textContent='Masih kosong';setTimeout(()=>b.textContent=label,1400);return;}
-  const done=()=>{b.textContent='Tersalin';setTimeout(()=>b.textContent=label,1600);};const fail=()=>{b.textContent='Gagal menyalin';setTimeout(()=>b.textContent=label,1800);};
+function copyBtn(id,getText,key){const b=$(id);b.addEventListener('click',()=>{const txt=getText();if(!txt){b.textContent=t('empty');setTimeout(()=>b.textContent=t(key),1400);return;}
+  const done=()=>{b.textContent=t('copied');setTimeout(()=>b.textContent=t(key),1600);};const fail=()=>{b.textContent=t('copyFail');setTimeout(()=>b.textContent=t(key),1800);};
   try{navigator.clipboard.writeText(txt).then(done,fail);}catch(e){fail();}});}
-copyBtn('#copyBtn',copyNotes,'Salin');copyBtn('#copyChord',copyChords,'Salin chord');
-$('#midiBtn').addEventListener('click',()=>{if(!track||!track.notes.length&&!track.chords.length){msg('Belum ada nada untuk diekspor.');return;}
-  const url=URL.createObjectURL(new Blob([midiBytes()],{type:'audio/midi'}));const a=document.createElement('a');a.href=url;a.download=(song?song.name.replace(/\.[^.]+$/,''):'ngulik')+'-'+INST_NAME[INST]+'.mid';
+copyBtn('#copyBtn',copyNotes,'copy');copyBtn('#copyChord',copyChords,'copyChord');
+$('#midiBtn').addEventListener('click',()=>{if(!track||!track.notes.length&&!track.chords.length){msg(t('mNoMidi'));return;}
+  const url=URL.createObjectURL(new Blob([midiBytes()],{type:'audio/midi'}));const a=document.createElement('a');a.href=url;a.download=(song?song.name.replace(/\.[^.]+$/,''):'ngulik')+'-'+instL(INST)+'.mid';
   document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);});
 $('#clearBtn').addEventListener('click',()=>{
   if(live){restartLiveForInst();return;}
-  player.unload();song=null;track=null;viewT=0;$('#sepPanel').hidden=true;$('#srcName').textContent='—';rebuildAll();ui();render();});
+  player.unload();song=null;track=null;viewT=0;$('#sepPanel').hidden=true;$('#srcName').textContent='–';rebuildAll();ui();render();});
 let drag=null;
 roll.addEventListener('pointerdown',e=>{if(live||!track)return;drag={x:e.clientX,t:viewT,was:player.playing};if(player.playing)player.pause();roll.setPointerCapture(e.pointerId);});
 roll.addEventListener('pointermove',e=>{if(!drag)return;viewT=clamp(drag.t-(e.clientX-drag.x)/ppsOf(roll._w),0,track.duration);render();});
@@ -1953,7 +2246,19 @@ roll.addEventListener('pointerup',endDrag);roll.addEventListener('pointercancel'
 new ResizeObserver(()=>render()).observe(document.querySelector('.wrap'));
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&player.playing)player.pause();});
 
-setInst(INST,false);
+/* ---------- bahasa ---------- */
+{const sel=$('#lang');sel.innerHTML=Object.entries(LANG_NAMES).map(([k,n])=>`<option value="${k}">${n}</option>`).join('');sel.value=LANG;
+  sel.addEventListener('change',()=>{LANG=L[sel.value]?sel.value:'id';store.set('ns.lang',LANG);applyLang();});}
+function applyLang(){
+  applyStatic();
+  if(song&&song.stems&&song.stems.mode==='demo')song.name=t('demoName');
+  if(song){$('#srcName').textContent=song.name;$('#sepName').textContent=song.name;}else if(track&&track.source==='mic'&&live){track.name=t('micLive');$('#srcName').textContent=track.name;}
+  if(song&&song.stems&&!$('#sepMix').hidden){const m=song.stems.mode;$('#sepBadge').textContent=t(m==='ai'?'badgeAI':m==='dsp'?'badgeDSP':'badgeDemo');}
+  $('#sepGo').textContent=t(askKind==='band'?'goBand':'goSingle');
+  $('#trVal').textContent=t('trVal',{n:(TR>0?'+':'')+TR});$('#capoVal').textContent=CAPO?t('capoVal',{n:CAPO}):t('noCapo');
+  setInst(INST,false);
+}
+applyLang();
 setTimeout(loadDemo,40);
 
 })();
